@@ -314,3 +314,26 @@ export function playerColliders(): Box2[] {
   const plants = PLANTS.map((p) => boxOf({ center: p, width: PLANT_SIZE, depth: PLANT_SIZE }));
   return [...WALL_COLLIDERS, ...desks, ...stations, ...landmarks, meeting, ...plants];
 }
+
+/** Zones offered for travel, in toolbar order. Greenery is decoration only. */
+export const TRAVEL_ZONES = ['reception', 'desks', 'qa', 'board', 'status', 'meeting'] as const satisfies readonly ZoneId[];
+
+/** Portrait screens turn the overview 90°, so the floor's long side runs down the screen. */
+export function overviewTurned(aspect: number): boolean {
+  return aspect < 1;
+}
+
+/**
+ * Height for a straight-down overview camera that fits the whole floor,
+ * given the camera's vertical field of view and the viewport aspect ratio.
+ */
+export function overviewHeight(fovDegrees: number, aspect: number, margin = 1.08): number {
+  const tanHalf = Math.tan((fovDegrees * Math.PI) / 360);
+  const turned = overviewTurned(aspect);
+  // Floor extent that lands across (horizontal) and down (vertical) the screen.
+  const across = turned ? FLOOR.depth : FLOOR.width;
+  const down = turned ? FLOOR.width : FLOOR.depth;
+  const forDown = down / 2 / tanHalf;
+  const forAcross = across / 2 / (tanHalf * Math.max(aspect, 0.1));
+  return Math.max(forDown, forAcross) * margin;
+}

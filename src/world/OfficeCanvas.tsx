@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import { useWorkflow } from '../store/context.ts';
+import { navigationStore } from '../store/navigation.ts';
 import { Characters } from './characters/Characters.tsx';
 import { characterModels } from './characters/models.ts';
 import { COLORS } from '../ui/tokens.ts';
@@ -151,7 +152,10 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       }}
       // A click on empty space locks the pointer; clicks on objects activate them instead.
       onPointerMissed={(e) => {
-        if (e.button === 0 && canvasRef.current) lockPointer(canvasRef.current);
+        // Only in walk mode: the overview is for looking, not mouse look.
+        if (e.button === 0 && canvasRef.current && navigationStore.getState().view === 'walk') {
+          lockPointer(canvasRef.current);
+        }
       }}
       aria-label="3D office floor"
     >
