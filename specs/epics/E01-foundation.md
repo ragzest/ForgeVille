@@ -1,6 +1,6 @@
 # E01 — Foundation
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 

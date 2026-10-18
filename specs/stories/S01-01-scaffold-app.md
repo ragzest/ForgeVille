@@ -1,6 +1,6 @@
 # S01-01 — Scaffold the app and quality scripts
 
-Status: todo
+Status: done
 Epic: [E01](../epics/E01-foundation.md)
 Depends on: none
 
