@@ -1,6 +1,6 @@
 # S04-01 — Walk, look, run, pointer lock
 
-Status: todo
+Status: done
 Epic: [E04](../epics/E04-navigation.md)
 Depends on: S03-01
 

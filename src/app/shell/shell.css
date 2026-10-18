@@ -139,3 +139,31 @@ body {
   border-radius: var(--fv-radius);
 }
 
+
+.control-hint {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--fv-radius);
+  background: color-mix(in srgb, var(--fv-charcoal) 82%, transparent);
+  color: var(--fv-ivory);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.control-hint p {
+  margin: 0;
+}
+
+.control-hint kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  border-radius: 4px;
+  background: var(--fv-ivory);
+  color: var(--fv-charcoal);
+  font: 600 0.75rem/1.5 var(--fv-font);
+  text-align: center;
+}
