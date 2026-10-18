@@ -1,6 +1,6 @@
 # S03-02 — Desks, board, QA corner, meeting area
 
-Status: todo
+Status: done
 Epic: [E03](../epics/E03-office.md)
 Depends on: S03-01
 

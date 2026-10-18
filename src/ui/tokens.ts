@@ -18,6 +18,14 @@ export const COLORS = {
   glass: '#cfe8df',
   sky: '#dfeee8',
   rug: '#efe7d6',
+  wood: '#a9774c',
+  deskTop: '#ecdcbf',
+  screen: '#1c2a25',
+  screenGlow: '#2e8b62',
+  whiteboard: '#fdfcf8',
+  pot: '#c47a4a',
+  leaf: '#3f9a63',
+  leafDark: '#2a6b47',
 } as const;
 
 export type ColorToken = keyof typeof COLORS;

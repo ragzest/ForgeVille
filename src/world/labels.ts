@@ -9,6 +9,8 @@ export interface FloorLabel {
 
 const cache = new Map<string, FloorLabel>();
 
+const PILL = { background: COLORS.forest, text: COLORS.ivory };
+
 const FONT_PX = 44;
 const PAD_X = 28;
 const HEIGHT = 76;
@@ -17,8 +19,9 @@ const HEIGHT = 76;
  * A pill-shaped text label drawn into a canvas texture. Uses the system font,
  * so nothing is downloaded. One material per distinct text, cached.
  */
-export function floorLabel(text: string): FloorLabel {
-  const cached = cache.get(text);
+export function floorLabel(text: string, colors: { background: string; text: string } = PILL): FloorLabel {
+  const key = `${colors.background}|${colors.text}|${text}`;
+  const cached = cache.get(key);
   if (cached) return cached;
 
   const canvas = document.createElement('canvas');
@@ -34,12 +37,12 @@ export function floorLabel(text: string): FloorLabel {
   canvas.height = HEIGHT;
 
   if (ctx) {
-    ctx.fillStyle = COLORS.forest;
+    ctx.fillStyle = colors.background;
     ctx.beginPath();
     ctx.roundRect(0, 0, canvas.width, canvas.height, HEIGHT / 2);
     ctx.fill();
     ctx.font = font;
-    ctx.fillStyle = COLORS.ivory;
+    ctx.fillStyle = colors.text;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
@@ -53,6 +56,6 @@ export function floorLabel(text: string): FloorLabel {
     material: new MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false }),
     aspect: canvas.width / canvas.height,
   };
-  cache.set(text, label);
+  cache.set(key, label);
   return label;
 }

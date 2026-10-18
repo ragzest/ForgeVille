@@ -1,6 +1,7 @@
 import { OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useWorkflow } from '../store/context.ts';
 import { COLORS } from '../ui/tokens.ts';
 import {
   FLOOR,
@@ -10,9 +11,11 @@ import {
   WINDOW_SILL,
   WINDOWS,
   ZONES,
+  deskAssignments,
   type WallWindow,
   type Zone,
 } from './layout.ts';
+import { Furniture } from './Furniture.tsx';
 import { floorLabel } from './labels.ts';
 import { GEOMETRIES, MATERIALS } from './materials.ts';
 
@@ -108,7 +111,8 @@ function ZonePad({ zone }: { zone: Zone }) {
         geometry={GEOMETRIES.plane}
         material={label.material}
         rotation-x={-Math.PI / 2}
-        position-y={0.012}
+        // At the zone's approach spot, where furniture never stands.
+        position={[zone.anchor.x - zone.center.x, 0.012, zone.anchor.z - zone.center.z]}
         scale={[labelHeight * label.aspect, labelHeight, 1]}
       />
     </group>
@@ -149,6 +153,18 @@ function OverviewCamera({ reducedMotion }: { reducedMotion: boolean }) {
 
 /** The office room: floor, walls, windows, lights, and reserved zone footprints. */
 export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
+  // Read the store outside the Canvas and pass plain props in.
+  const agents = useWorkflow((s) => s.snapshot.agents);
+  const projectName = useWorkflow((s) => s.snapshot.projects[0]?.name ?? 'Project');
+  const desks = useMemo(
+    () =>
+      deskAssignments(agents).map((desk) => ({
+        desk,
+        name: agents.find((a) => a.id === desk.agentId)?.name ?? desk.agentId,
+      })),
+    [agents],
+  );
+
   return (
     <Canvas
       shadows="percentage"
@@ -184,6 +200,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       {ZONES.map((zone) => (
         <ZonePad key={zone.id} zone={zone} />
       ))}
+      <Furniture desks={desks} projectName={projectName} />
       <OverviewCamera reducedMotion={reducedMotion} />
     </Canvas>
   );
