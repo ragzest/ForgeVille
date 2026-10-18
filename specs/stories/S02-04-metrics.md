@@ -1,6 +1,6 @@
 # S02-04 — Mission-control metrics
 
-Status: todo
+Status: done
 Epic: [E02](../epics/E02-domain.md)
 Depends on: S02-01
 
