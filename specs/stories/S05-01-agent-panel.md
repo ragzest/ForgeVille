@@ -1,6 +1,6 @@
 # S05-01 — Desk detail panel
 
-Status: todo
+Status: done
 Epic: [E05](../epics/E05-desks.md)
 Depends on: S04-02, S02-05
 

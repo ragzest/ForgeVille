@@ -11,11 +11,16 @@ export interface InteractionTarget {
   readonly footprint: Footprint;
 }
 
+/** Desk label shared by the hint, the panel title, and the 2D roster. */
+export function deskLabel(name: string): string {
+  return `${name}'s desk`;
+}
+
 /** Every interactive object for the current agents: one desk each plus the landmarks. */
 export function interactionTargets(agents: readonly { readonly id: string; readonly name: string }[]): InteractionTarget[] {
   const desks = deskAssignments(agents).map((desk) => ({
     id: desk.id,
-    label: `${agents.find((a) => a.id === desk.agentId)?.name ?? desk.agentId}'s desk`,
+    label: deskLabel(agents.find((a) => a.id === desk.agentId)?.name ?? desk.agentId),
     footprint: deskFootprint(desk.slot),
   }));
   const landmarks = LANDMARKS.map((l) => ({ id: l.id, label: l.label, footprint: l.footprint }));

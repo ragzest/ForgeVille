@@ -76,8 +76,9 @@ export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeV
   );
 }
 
-/** Non-3D path: the same 2D view the user can choose, with zone selection only. */
+/** Non-3D path: the same 2D view the user can choose, with zone selection and desk panels. */
 export function FallbackView() {
+  useInteractionKeys();
   return (
     <>
       <div className="shell-panel shell-panel--notice" role="status">

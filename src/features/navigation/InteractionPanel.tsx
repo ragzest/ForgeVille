@@ -1,19 +1,22 @@
 import { useInteraction } from '../../store/interaction.ts';
+import { DeskPanel } from '../desks/DeskPanel.tsx';
+import { agentIdFromDesk } from '../desks/deskDetails.ts';
 
 const COMING_IN: Readonly<Record<string, string>> = {
-  desk: 'Agent details arrive with the desk panel (S05-01).',
   board: 'The task board arrives with S06-01.',
   'qa-screen': 'Pull-request and QA details arrive with S07-01.',
   'status-display': 'Project metrics arrive with mission control (S08-01).',
   reception: 'Project overview arrives with the vertical slice (E09).',
 };
 
-/** Placeholder panel for the activated object until its own panel story lands. */
+/** The activated object's panel: the desk panel, or a placeholder until that object's story lands. */
 export function InteractionPanel() {
   const open = useInteraction((s) => s.open);
   const close = useInteraction((s) => s.close);
   if (!open) return null;
-  const kind = open.id.startsWith('desk:') ? 'desk' : open.id;
+  const agentId = agentIdFromDesk(open.id);
+  if (agentId !== null) return <DeskPanel key={agentId} agentId={agentId} title={open.label} />;
+  const kind = open.id;
 
   return (
     <section className="panel" role="dialog" aria-modal="false" aria-labelledby="interaction-panel-title">

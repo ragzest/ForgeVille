@@ -1,6 +1,6 @@
 # E05 — Agent desks
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 
