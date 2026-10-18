@@ -1,9 +1,7 @@
-import type { ScenarioId, TaskColumn, WorkflowSnapshot } from '../domain/index.ts';
+import type { CommandOutcome, ScenarioId, TaskColumn, WorkflowSnapshot } from '../domain/index.ts';
 
 /** Every command returns the resulting snapshot; failures leave it unchanged. */
-export type CommandResult =
-  | { readonly ok: true; readonly snapshot: WorkflowSnapshot }
-  | { readonly ok: false; readonly reason: string; readonly snapshot: WorkflowSnapshot };
+export type CommandResult = CommandOutcome;
 
 /**
  * What any workflow backend must implement. Milestone 0 ships only the mock.
