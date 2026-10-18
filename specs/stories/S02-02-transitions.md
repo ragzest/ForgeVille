@@ -1,6 +1,6 @@
 # S02-02 — Task transitions and agent presence
 
-Status: todo
+Status: done
 Epic: [E02](../epics/E02-domain.md)
 Depends on: S02-01
 
