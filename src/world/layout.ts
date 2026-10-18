@@ -136,3 +136,136 @@ export function zoneBounds(zone: Zone) {
     maxZ: zone.center.z + zone.size.depth / 2,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Furniture. Positions are footprint centres on the floor; `rotationY` turns
+// an item about its centre (0 = facing north, towards -z).
+
+export interface Footprint {
+  readonly center: Point2;
+  readonly width: number;
+  readonly depth: number;
+}
+
+/** Desk top size. A chair sits on the south side, so a desk's footprint runs deeper. */
+export const DESK = { width: 1.6, depth: 0.8, height: 0.75 } as const;
+/** Desk plus chair, measured from the desk's centre: 0.4 north, 1.1 south. */
+export const DESK_FOOTPRINT = { width: DESK.width, north: 0.4, south: 1.1 } as const;
+
+/**
+ * Seven desk slots in two rows inside the desks zone, all facing north.
+ * 1.25 m clear between neighbours and 1.7 m between rows.
+ */
+export const DESK_SLOTS: readonly Point2[] = [
+  { x: -5.7, z: -2.8 },
+  { x: -2.85, z: -2.8 },
+  { x: 0, z: -2.8 },
+  { x: 2.85, z: -2.8 },
+  { x: -4.3, z: 0.4 },
+  { x: -1.45, z: 0.4 },
+  { x: 1.4, z: 0.4 },
+];
+
+export const DESK_COUNT = DESK_SLOTS.length;
+
+/** Floor area a desk and its chair occupy. */
+export function deskFootprint(slot: Point2): Footprint {
+  const depth = DESK_FOOTPRINT.north + DESK_FOOTPRINT.south;
+  return {
+    center: { x: slot.x, z: slot.z - DESK_FOOTPRINT.north + depth / 2 },
+    width: DESK_FOOTPRINT.width,
+    depth,
+  };
+}
+
+export interface DeskAssignment {
+  /** Stable interactive id: `desk:{agentId}`. */
+  readonly id: `desk:${string}`;
+  readonly agentId: string;
+  readonly slot: Point2;
+  /** Where a visitor stands to use the desk: the aisle behind the chair. */
+  readonly approach: Point2;
+}
+
+/**
+ * Binds agents to desk slots in snapshot order. Agents beyond the desk count
+ * get no desk in this milestone; the seed has exactly one agent per desk.
+ */
+export function deskAssignments(agents: readonly { readonly id: string }[]): DeskAssignment[] {
+  return agents.slice(0, DESK_COUNT).flatMap((agent, i) => {
+    const slot = DESK_SLOTS[i];
+    if (!slot) return [];
+    return [{ id: `desk:${agent.id}` as const, agentId: agent.id, slot, approach: { x: slot.x, z: slot.z + 1.45 } }];
+  });
+}
+
+export type LandmarkId = 'board' | 'qa-screen' | 'status-display' | 'reception';
+
+export interface Landmark {
+  /** Stable interactive id. */
+  readonly id: LandmarkId;
+  readonly label: string;
+  readonly zone: ZoneId;
+  readonly footprint: Footprint;
+  /** Where a visitor stands to use it. */
+  readonly approach: Point2;
+}
+
+/** Interactive landmarks other than desks. */
+export const LANDMARKS: readonly Landmark[] = [
+  {
+    id: 'board',
+    label: 'Kanban board',
+    zone: 'board',
+    footprint: { center: { x: -11.74, z: -2 }, width: 0.1, depth: 4.2 },
+    approach: { x: -8.2, z: -2 },
+  },
+  {
+    id: 'qa-screen',
+    label: 'QA screen',
+    zone: 'qa',
+    footprint: { center: { x: 8.5, z: -6.9 }, width: 2.4, depth: 0.1 },
+    approach: { x: 8.5, z: -0.8 },
+  },
+  {
+    id: 'status-display',
+    label: 'Project status display',
+    zone: 'status',
+    footprint: { center: { x: -1, z: 6.8 }, width: 2.6, depth: 0.5 },
+    approach: { x: -1, z: 4.6 },
+  },
+  {
+    id: 'reception',
+    label: 'Reception',
+    zone: 'reception',
+    footprint: { center: { x: 9.2, z: 5 }, width: 1, depth: 3 },
+    approach: { x: 6.5, z: 5 },
+  },
+];
+
+/** Every stable interactive id for a set of agents. */
+export function interactiveIds(agents: readonly { readonly id: string }[]): string[] {
+  return [...deskAssignments(agents).map((d) => d.id), ...LANDMARKS.map((l) => l.id)];
+}
+
+/** Non-interactive furniture with a floor footprint, for aisle checks. */
+export const QA_STATIONS: readonly Point2[] = [
+  { x: 7.2, z: -4.6 },
+  { x: 9.8, z: -4.6 },
+];
+export const QA_STATION = { width: 1.8, depth: 0.8, height: 0.75 } as const;
+
+export const MEETING_TABLE = { center: { x: -8, z: 5.5 }, radius: 1.1, height: 0.74, chairs: 6 } as const;
+
+/** Potted plants: under the north windows and in a few corners. */
+export const PLANTS: readonly Point2[] = [
+  { x: -6.4, z: -6.9 },
+  { x: -3.75, z: -6.9 },
+  { x: 0.75, z: -6.9 },
+  { x: 3.4, z: -6.9 },
+  { x: -11.4, z: 7.4 },
+  { x: 11.4, z: 7.4 },
+  { x: 11.4, z: 1.8 },
+  { x: -11.4, z: -7.4 },
+  { x: 5.3, z: 7.3 },
+];
