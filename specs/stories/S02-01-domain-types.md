@@ -1,6 +1,6 @@
 # S02-01 — Domain types and snapshot
 
-Status: todo
+Status: done
 Epic: [E02](../epics/E02-domain.md)
 Depends on: S01-01
 

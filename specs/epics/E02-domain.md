@@ -1,6 +1,6 @@
 # E02 — Domain and mock workflow
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 

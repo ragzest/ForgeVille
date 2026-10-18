@@ -11,8 +11,8 @@ Status key: `todo` | `in-progress` | `done`
 | 1 | [E01](epics/E01-foundation.md) | Foundation | done |
 | 1.1 | [S01-01](stories/S01-01-scaffold-app.md) | Scaffold the app and quality scripts | done |
 | 1.2 | [S01-02](stories/S01-02-app-shell.md) | App shell, loading, and WebGL fallback | done |
-| 2 | [E02](epics/E02-domain.md) | Domain and mock workflow | todo |
-| 2.1 | [S02-01](stories/S02-01-domain-types.md) | Domain types and snapshot | todo |
+| 2 | [E02](epics/E02-domain.md) | Domain and mock workflow | in-progress |
+| 2.1 | [S02-01](stories/S02-01-domain-types.md) | Domain types and snapshot | done |
 | 2.2 | [S02-02](stories/S02-02-transitions.md) | Task transitions and agent presence | todo |
 | 2.3 | [S02-03](stories/S02-03-merge-policy.md) | Pull-request policy and QA failure | todo |
 | 2.4 | [S02-04](stories/S02-04-metrics.md) | Mission-control metrics | todo |
