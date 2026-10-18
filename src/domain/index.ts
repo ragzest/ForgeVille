@@ -5,3 +5,4 @@ export * from './transitions.ts';
 export * from './presence.ts';
 export * from './policy.ts';
 export * from './qa.ts';
+export * from './metrics.ts';
