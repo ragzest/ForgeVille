@@ -1,6 +1,6 @@
 # S01-02 — App shell, loading, and WebGL fallback
 
-Status: todo
+Status: done
 Epic: [E01](../epics/E01-foundation.md)
 Depends on: S01-01
 
