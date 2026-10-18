@@ -1,3 +1,5 @@
+import type { Box2 } from './player/movement.ts';
+
 /**
  * Office floor plan as data. Everything that places a zone, sign, or
  * interactable reads from here instead of hard-coding coordinates.
@@ -269,3 +271,46 @@ export const PLANTS: readonly Point2[] = [
   { x: -11.4, z: -7.4 },
   { x: 5.3, z: 7.3 },
 ];
+
+// ---------------------------------------------------------------------------
+// Player colliders: simple boxes in plan view. Perfect physics is not needed;
+// these keep the player out of walls and large furniture.
+
+
+const boxOf = (f: Footprint): Box2 => ({
+  minX: f.center.x - f.width / 2,
+  maxX: f.center.x + f.width / 2,
+  minZ: f.center.z - f.depth / 2,
+  maxZ: f.center.z + f.depth / 2,
+});
+
+/** Where the player starts: inside the south entrance, facing north into the room. */
+export const PLAYER_SPAWN = { x: 3, z: 6.6, yaw: 0, pitch: -0.12 } as const;
+
+/** Walls as thick boxes just outside the floor edge. */
+const WALL_COLLIDERS: readonly Box2[] = [
+  { minX: -FLOOR.width / 2 - 1, maxX: FLOOR.width / 2 + 1, minZ: -FLOOR.depth / 2 - 1, maxZ: -FLOOR.depth / 2 },
+  { minX: -FLOOR.width / 2 - 1, maxX: FLOOR.width / 2 + 1, minZ: FLOOR.depth / 2, maxZ: FLOOR.depth / 2 + 1 },
+  { minX: -FLOOR.width / 2 - 1, maxX: -FLOOR.width / 2, minZ: -FLOOR.depth / 2 - 1, maxZ: FLOOR.depth / 2 + 1 },
+  { minX: FLOOR.width / 2, maxX: FLOOR.width / 2 + 1, minZ: -FLOOR.depth / 2 - 1, maxZ: FLOOR.depth / 2 + 1 },
+];
+
+/** Plant pots are small; a 0.5 m square is enough. */
+const PLANT_SIZE = 0.5;
+
+export function playerColliders(): Box2[] {
+  const desks = DESK_SLOTS.map((slot) => boxOf(deskFootprint(slot)));
+  const stations = QA_STATIONS.map((c) =>
+    boxOf({ center: { x: c.x, z: c.z + 0.35 }, width: QA_STATION.width, depth: QA_STATION.depth + 0.7 }),
+  );
+  const landmarks = LANDMARKS.map((l) => boxOf(l.footprint));
+  const table = MEETING_TABLE.radius + 0.7; // table plus chairs
+  const meeting: Box2 = {
+    minX: MEETING_TABLE.center.x - table,
+    maxX: MEETING_TABLE.center.x + table,
+    minZ: MEETING_TABLE.center.z - table,
+    maxZ: MEETING_TABLE.center.z + table,
+  };
+  const plants = PLANTS.map((p) => boxOf({ center: p, width: PLANT_SIZE, depth: PLANT_SIZE }));
+  return [...WALL_COLLIDERS, ...desks, ...stations, ...landmarks, meeting, ...plants];
+}

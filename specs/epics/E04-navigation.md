@@ -1,6 +1,6 @@
 # E04 — Movement and navigation
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 

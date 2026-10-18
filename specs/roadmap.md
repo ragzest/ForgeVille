@@ -21,8 +21,8 @@ Status key: `todo` | `in-progress` | `done`
 | 3.1 | [S03-01](stories/S03-01-office-shell.md) | Lit office shell and zone layout | done |
 | 3.2 | [S03-02](stories/S03-02-furnishings.md) | Desks, board, QA corner, meeting area | done |
 | 3.3 | [S03-03](stories/S03-03-characters.md) | Characters bound to agent presence | done |
-| 4 | [E04](epics/E04-navigation.md) | Movement and navigation | todo |
-| 4.1 | [S04-01](stories/S04-01-player-controls.md) | Walk, look, run, pointer lock | todo |
+| 4 | [E04](epics/E04-navigation.md) | Movement and navigation | in-progress |
+| 4.1 | [S04-01](stories/S04-01-player-controls.md) | Walk, look, run, pointer lock | done |
 | 4.2 | [S04-02](stories/S04-02-interact.md) | Proximity interaction and hints | todo |
 | 4.3 | [S04-03](stories/S04-03-overview-and-2d.md) | Overview, zone travel, and 2D alternative | todo |
 | 5 | [E05](epics/E05-desks.md) | Agent desks | todo |

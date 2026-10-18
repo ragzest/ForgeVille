@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { ControlHint } from '../../features/navigation/ControlHint.tsx';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary.tsx';
 
 interface ErrorViewProps {
@@ -46,6 +47,7 @@ export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeV
           </Suspense>
         </CanvasErrorBoundary>
       </div>
+      {mounted && <ControlHint />}
       {!mounted && (
         <div className="office-loading">
           <LoadingView />

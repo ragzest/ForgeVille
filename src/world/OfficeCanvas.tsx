@@ -1,13 +1,12 @@
-import { OrbitControls } from '@react-three/drei';
-import { Canvas, useThree } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { useMemo } from 'react';
 import { useWorkflow } from '../store/context.ts';
 import { Characters } from './characters/Characters.tsx';
 import { characterModels } from './characters/models.ts';
 import { COLORS } from '../ui/tokens.ts';
 import {
   FLOOR,
-  OVERVIEW_CAMERA,
+  PLAYER_SPAWN,
   WALL,
   WINDOW_HEIGHT,
   WINDOW_SILL,
@@ -19,6 +18,8 @@ import {
 } from './layout.ts';
 import { Furniture } from './Furniture.tsx';
 import { floorLabel } from './labels.ts';
+import { EYE_HEIGHT } from './player/movement.ts';
+import { PlayerRig } from './player/PlayerRig.tsx';
 import { GEOMETRIES, MATERIALS } from './materials.ts';
 
 export interface OfficeCanvasProps {
@@ -29,8 +30,6 @@ export interface OfficeCanvasProps {
 
 const HALF_W = FLOOR.width / 2;
 const HALF_D = FLOOR.depth / 2;
-/** The south wall is cut low so the overview camera can see in. */
-const SOUTH_WALL_HEIGHT = 0.6;
 
 function Floor() {
   return (
@@ -64,7 +63,7 @@ function Walls() {
       <WallSegment x={0} z={-HALF_D - t / 2} width={FLOOR.width + t * 2} depth={t} height={WALL.height} />
       <WallSegment x={-HALF_W - t / 2} z={0} width={t} depth={FLOOR.depth} height={WALL.height} />
       <WallSegment x={HALF_W + t / 2} z={0} width={t} depth={FLOOR.depth} height={WALL.height} />
-      <WallSegment x={0} z={HALF_D + t / 2} width={FLOOR.width + t * 2} depth={t} height={SOUTH_WALL_HEIGHT} />
+      <WallSegment x={0} z={HALF_D + t / 2} width={FLOOR.width + t * 2} depth={t} height={WALL.height} />
     </group>
   );
 }
@@ -121,39 +120,7 @@ function ZonePad({ zone }: { zone: Zone }) {
   );
 }
 
-/** Aspect ratio at which the overview camera frames the whole floor as-is. */
-const REFERENCE_ASPECT = 1.6;
-
-/**
- * Temporary overview camera until E04. On narrow screens it backs off along
- * the same line of sight so the whole floor stays in view.
- */
-function OverviewCamera({ reducedMotion }: { reducedMotion: boolean }) {
-  const camera = useThree((state) => state.camera);
-  const width = useThree((state) => state.size.width);
-  const height = useThree((state) => state.size.height);
-  const backOff = Math.max(1, REFERENCE_ASPECT / (width / Math.max(height, 1)));
-
-  useEffect(() => {
-    const [x, y, z] = OVERVIEW_CAMERA.position;
-    camera.position.set(x * backOff, y * backOff, z * backOff);
-    camera.lookAt(...OVERVIEW_CAMERA.target);
-  }, [camera, backOff]);
-
-  return (
-    <OrbitControls
-      target={[...OVERVIEW_CAMERA.target]}
-      enablePan={false}
-      enableDamping={!reducedMotion}
-      minDistance={12}
-      maxDistance={34 * backOff}
-      minPolarAngle={0.2}
-      maxPolarAngle={Math.PI * 0.42}
-    />
-  );
-}
-
-/** The office room: floor, walls, windows, lights, and reserved zone footprints. */
+/** The office: room, furniture, characters, and the first-person player. */
 export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
   // Read the store outside the Canvas and pass plain props in.
   const snapshot = useWorkflow((s) => s.snapshot);
@@ -173,7 +140,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
     <Canvas
       shadows="percentage"
       dpr={[1, 2]}
-      camera={{ position: [...OVERVIEW_CAMERA.position], fov: OVERVIEW_CAMERA.fov }}
+      camera={{ position: [PLAYER_SPAWN.x, EYE_HEIGHT, PLAYER_SPAWN.z], fov: 70, near: 0.05 }}
       onCreated={() => {
         onReady();
       }}
@@ -206,7 +173,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       ))}
       <Furniture desks={desks} projectName={projectName} />
       <Characters characters={characters} />
-      <OverviewCamera reducedMotion={reducedMotion} />
+      <PlayerRig />
     </Canvas>
   );
 }
