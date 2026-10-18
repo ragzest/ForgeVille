@@ -1,8 +1,11 @@
-export function App() {
-  return (
-    <main>
-      <h1>ForgeVille</h1>
-      <p>Simulated office prototype. Nothing here runs real agents.</p>
-    </main>
-  );
+import { AppShell } from './shell/AppShell.tsx';
+import type { ShellEnvironment } from './shell/environment.ts';
+import './shell/shell.css';
+
+interface AppProps {
+  environment?: ShellEnvironment;
+}
+
+export function App({ environment }: AppProps) {
+  return environment ? <AppShell environment={environment} /> : <AppShell />;
 }

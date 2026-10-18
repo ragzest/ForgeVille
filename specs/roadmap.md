@@ -8,9 +8,9 @@ Status key: `todo` | `in-progress` | `done`
 
 | Order | Id | Title | Status |
 | --- | --- | --- | --- |
-| 1 | [E01](epics/E01-foundation.md) | Foundation | in-progress |
+| 1 | [E01](epics/E01-foundation.md) | Foundation | done |
 | 1.1 | [S01-01](stories/S01-01-scaffold-app.md) | Scaffold the app and quality scripts | done |
-| 1.2 | [S01-02](stories/S01-02-app-shell.md) | App shell, loading, and WebGL fallback | todo |
+| 1.2 | [S01-02](stories/S01-02-app-shell.md) | App shell, loading, and WebGL fallback | done |
 | 2 | [E02](epics/E02-domain.md) | Domain and mock workflow | todo |
 | 2.1 | [S02-01](stories/S02-01-domain-types.md) | Domain types and snapshot | todo |
 | 2.2 | [S02-02](stories/S02-02-transitions.md) | Task transitions and agent presence | todo |
