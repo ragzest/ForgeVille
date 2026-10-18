@@ -1,6 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App.tsx';
+import { applyColorTokens } from './ui/tokens.ts';
+
+applyColorTokens(document.documentElement);
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

@@ -8,6 +8,23 @@ test('app shell loads with the ForgeVille title', async ({ page }) => {
   await expect(page.locator('[data-shell-status="ready"], [data-shell-status="no-webgl"]')).toBeVisible();
 });
 
+test('the 3D office canvas mounts and the shell becomes ready', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+
+  await page.goto('/');
+  await expect(page.locator('[data-shell-status="ready"]')).toBeVisible({ timeout: 30_000 });
+  const canvas = page.getByTestId('office-canvas').locator('canvas');
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThan(300);
+  expect(box?.height ?? 0).toBeGreaterThan(200);
+  expect(errors).toEqual([]);
+});
+
 test('?shell=error shows a message and retry recovers', async ({ page }) => {
   await page.goto('/?shell=error');
   const alert = page.getByRole('alert');

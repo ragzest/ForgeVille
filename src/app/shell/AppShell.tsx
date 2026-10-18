@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { bootShell, type BootResult, type ShellStatus } from './boot.ts';
 import { browserEnvironment, type ShellEnvironment } from './environment.ts';
 import { PreferencesContext, type ShellPreferences } from './preferences.ts';
@@ -15,6 +15,7 @@ export function AppShell({ environment }: AppShellProps) {
   const [preferences] = useState<ShellPreferences>(() => ({ reducedMotion: env.prefersReducedMotion() }));
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<ShellState>({ status: 'loading' });
+  const [officeMounted, setOfficeMounted] = useState(false);
 
   // Boot after the loading state has painted.
   useEffect(() => {
@@ -28,10 +29,19 @@ export function AppShell({ environment }: AppShellProps) {
 
   const retry = () => {
     setState({ status: 'loading' });
+    setOfficeMounted(false);
     setAttempt((n) => n + 1);
   };
 
-  const status: ShellStatus = state.status;
+  const markOfficeReady = useCallback(() => {
+    setOfficeMounted(true);
+  }, []);
+  const failOffice = useCallback((message: string) => {
+    setState({ status: 'error', message });
+  }, []);
+
+  // Ready only once the canvas has mounted.
+  const status: ShellStatus = state.status === 'ready' && !officeMounted ? 'loading' : state.status;
 
   return (
     <PreferencesContext.Provider value={preferences}>
@@ -44,7 +54,14 @@ export function AppShell({ environment }: AppShellProps) {
           {state.status === 'loading' && <LoadingView />}
           {state.status === 'error' && <ErrorView message={state.message} onRetry={retry} />}
           {state.status === 'no-webgl' && <FallbackView />}
-          {state.status === 'ready' && <OfficeView />}
+          {state.status === 'ready' && (
+            <OfficeView
+              mounted={officeMounted}
+              reducedMotion={preferences.reducedMotion}
+              onReady={markOfficeReady}
+              onError={failOffice}
+            />
+          )}
         </main>
         {/* Panels mount here in later stories. Empty, with nothing focusable. */}
         <div id="overlay-root" className="shell-overlays" data-testid="overlay-root" />
