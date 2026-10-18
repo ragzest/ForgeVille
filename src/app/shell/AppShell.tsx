@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { bootShell, type BootResult, type ShellStatus } from './boot.ts';
 import { browserEnvironment, type ShellEnvironment } from './environment.ts';
 import { PreferencesContext, type ShellPreferences } from './preferences.ts';
+import { InteractionPanel } from '../../features/navigation/InteractionPanel.tsx';
 import { ErrorView, FallbackView, LoadingView, OfficeView } from './ShellViews.tsx';
 
 interface AppShellProps {
@@ -64,7 +65,9 @@ export function AppShell({ environment }: AppShellProps) {
           )}
         </main>
         {/* Panels mount here in later stories. Empty, with nothing focusable. */}
-        <div id="overlay-root" className="shell-overlays" data-testid="overlay-root" />
+        <div id="overlay-root" className="shell-overlays" data-testid="overlay-root">
+          {state.status === 'ready' && officeMounted && <InteractionPanel />}
+        </div>
       </div>
     </PreferencesContext.Provider>
   );

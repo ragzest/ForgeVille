@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import type { Group, Material } from 'three';
 import { COLORS } from '../../ui/tokens.ts';
+import { interactProps } from '../interactable.ts';
 import { floorLabel } from '../labels.ts';
 import type { Point2 } from '../layout.ts';
 import { GEOMETRIES, MATERIALS, shirtMaterial } from '../materials.ts';
@@ -181,7 +182,13 @@ export function Character({ agentId, name, slot, accessory, shirt, look, phase }
   const hipY = 0.5;
 
   return (
-    <group name={`character:${agentId}`} userData={{ agentId, name, pose: look.pose }} position={[slot.x, 0, slot.z + 0.75]}>
+    <group
+      name={`character:${agentId}`}
+      userData={{ agentId, name, pose: look.pose }}
+      position={[slot.x, 0, slot.z + 0.75]}
+      // Clicking the person opens their desk.
+      {...interactProps({ id: `desk:${agentId}`, label: `${name}'s desk` })}
+    >
       <group ref={root}>
         {/* Legs: thighs on the seat, shins down to the floor. */}
         <Part geometry="box" material={MATERIALS.trousers} position={[-0.09, hipY, -0.18]} scale={[0.12, 0.12, 0.38]} />

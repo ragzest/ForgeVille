@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useWorkflow } from '../store/context.ts';
 import { Characters } from './characters/Characters.tsx';
 import { characterModels } from './characters/models.ts';
@@ -17,6 +17,8 @@ import {
   type Zone,
 } from './layout.ts';
 import { Furniture } from './Furniture.tsx';
+import { interactionTargets } from './interaction.ts';
+import { lockPointer } from './interactable.ts';
 import { floorLabel } from './labels.ts';
 import { EYE_HEIGHT } from './player/movement.ts';
 import { PlayerRig } from './player/PlayerRig.tsx';
@@ -135,14 +137,21 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
     [agents],
   );
   const characters = useMemo(() => characterModels(snapshot, reducedMotion), [snapshot, reducedMotion]);
+  const targets = useMemo(() => interactionTargets(agents), [agents]);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   return (
     <Canvas
       shadows="percentage"
       dpr={[1, 2]}
       camera={{ position: [PLAYER_SPAWN.x, EYE_HEIGHT, PLAYER_SPAWN.z], fov: 70, near: 0.05 }}
-      onCreated={() => {
+      onCreated={(state) => {
+        canvasRef.current = state.gl.domElement;
         onReady();
+      }}
+      // A click on empty space locks the pointer; clicks on objects activate them instead.
+      onPointerMissed={(e) => {
+        if (e.button === 0 && canvasRef.current) lockPointer(canvasRef.current);
       }}
       aria-label="3D office floor"
     >
@@ -173,7 +182,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       ))}
       <Furniture desks={desks} projectName={projectName} />
       <Characters characters={characters} />
-      <PlayerRig />
+      <PlayerRig targets={targets} />
     </Canvas>
   );
 }
