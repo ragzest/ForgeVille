@@ -26,9 +26,15 @@ export const COLORS = {
   pot: '#c47a4a',
   leaf: '#3f9a63',
   leafDark: '#2a6b47',
+  /** Review status: distinct from success (mint) and blocked (danger). */
+  review: '#4f63b8',
+  skin: '#f1c9a5',
 } as const;
 
 export type ColorToken = keyof typeof COLORS;
+
+/** Shirt colours for characters, assigned by desk. */
+export const CHARACTER_COLORS = ['#3f7d5f', '#b4663f', '#5b6fb5', '#c49a3a', '#7a5ea8', '#3c8c9a', '#a5534f', '#6b8f3a'] as const;
 
 const cssName = (token: string) => `--fv-${token.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
 

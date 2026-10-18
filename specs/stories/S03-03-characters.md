@@ -1,6 +1,6 @@
 # S03-03 — Characters bound to agent presence
 
-Status: todo
+Status: done
 Epic: [E03](../epics/E03-office.md)
 Depends on: S03-02, S02-02
 

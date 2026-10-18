@@ -2,6 +2,8 @@ import { OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import { useEffect, useMemo } from 'react';
 import { useWorkflow } from '../store/context.ts';
+import { Characters } from './characters/Characters.tsx';
+import { characterModels } from './characters/models.ts';
 import { COLORS } from '../ui/tokens.ts';
 import {
   FLOOR,
@@ -154,8 +156,9 @@ function OverviewCamera({ reducedMotion }: { reducedMotion: boolean }) {
 /** The office room: floor, walls, windows, lights, and reserved zone footprints. */
 export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
   // Read the store outside the Canvas and pass plain props in.
-  const agents = useWorkflow((s) => s.snapshot.agents);
-  const projectName = useWorkflow((s) => s.snapshot.projects[0]?.name ?? 'Project');
+  const snapshot = useWorkflow((s) => s.snapshot);
+  const { agents } = snapshot;
+  const projectName = snapshot.projects[0]?.name ?? 'Project';
   const desks = useMemo(
     () =>
       deskAssignments(agents).map((desk) => ({
@@ -164,6 +167,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       })),
     [agents],
   );
+  const characters = useMemo(() => characterModels(snapshot, reducedMotion), [snapshot, reducedMotion]);
 
   return (
     <Canvas
@@ -201,6 +205,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
         <ZonePad key={zone.id} zone={zone} />
       ))}
       <Furniture desks={desks} projectName={projectName} />
+      <Characters characters={characters} />
       <OverviewCamera reducedMotion={reducedMotion} />
     </Canvas>
   );
