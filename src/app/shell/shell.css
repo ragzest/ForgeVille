@@ -14,7 +14,9 @@ body {
 }
 
 .shell {
-  min-height: 100vh;
+  /* Exactly one screen tall: the office fills what is left and the main area scrolls (2D view). */
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -42,6 +44,8 @@ body {
 
 .shell-main {
   flex: 1;
+  min-height: 0;
+  overflow: auto;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -112,14 +116,15 @@ body {
 
 .office {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
-  min-height: 60vh;
+  min-height: 320px;
 }
 
 .office-canvas {
+  position: relative;
   flex: 1;
-  min-height: 60vh;
+  min-height: 0;
   border-radius: var(--fv-radius);
   overflow: hidden;
   background: var(--fv-ivory);
@@ -128,6 +133,12 @@ body {
 
 .office-canvas canvas {
   display: block;
+}
+
+/* R3F sizes its canvas in pixels; pinning its wrapper stops that from growing the layout. */
+.office-canvas > div {
+  position: absolute;
+  inset: 0;
 }
 
 .office-loading {
@@ -247,3 +258,99 @@ body {
   color: color-mix(in srgb, var(--fv-charcoal) 75%, transparent);
   font-size: 0.9rem;
 }
+
+/* Navigation toolbar: wraps on narrow screens so every button stays reachable. */
+.nav-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.nav-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.nav-toolbar button,
+.zone-button {
+  font: 500 0.85rem/1.2 var(--fv-font);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fv-forest) 35%, transparent);
+  background: #fff;
+  color: var(--fv-forest);
+  cursor: pointer;
+}
+
+.nav-toolbar button[aria-pressed='true'],
+.zone-button[aria-pressed='true'] {
+  background: var(--fv-forest);
+  color: var(--fv-ivory);
+}
+
+.nav-toolbar button:focus-visible,
+.zone-button:focus-visible {
+  outline: 3px solid var(--fv-emerald);
+  outline-offset: 2px;
+}
+
+/* 2D view: columns side by side on wide screens, stacked under the toolbar on narrow ones. */
+.two-d {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(16rem, 1.2fr) minmax(18rem, 1.6fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .two-d {
+    grid-template-columns: 1fr;
+  }
+}
+
+.two-d-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.two-d-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+}
+
+.two-d-muted {
+  color: color-mix(in srgb, var(--fv-charcoal) 65%, transparent);
+  font-size: 0.85rem;
+}
+
+.two-d-column h3 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.is-highlighted {
+  outline: 2px solid var(--fv-emerald);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.presence {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--fv-grey);
+}
+
+.presence--working { background: var(--fv-mint); color: var(--fv-forest); }
+.presence--blocked { background: var(--fv-danger); color: var(--fv-ivory); }
+.presence--awaiting_review { background: var(--fv-amber); color: var(--fv-ivory); }
+.presence--reviewing { background: var(--fv-review); color: var(--fv-ivory); }

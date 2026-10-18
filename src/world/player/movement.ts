@@ -84,3 +84,9 @@ export function look(pose: PlayerPose, movementX: number, movementY: number, sen
   const pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pose.pitch - movementY * sensitivity));
   return { ...pose, yaw: pose.yaw - movementX * sensitivity, pitch };
 }
+
+/** Yaw that faces from one floor point towards another. */
+export function yawToward(from: { x: number; z: number }, to: { x: number; z: number }): number {
+  // Forward is (-sin yaw, -cos yaw), so solve for the direction to the target.
+  return Math.atan2(-(to.x - from.x), -(to.z - from.z));
+}

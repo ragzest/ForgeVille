@@ -1,6 +1,6 @@
 # S04-03 — Overview, zone travel, and 2D alternative
 
-Status: todo
+Status: done
 Epic: [E04](../epics/E04-navigation.md)
 Depends on: S04-01, S03-01
 

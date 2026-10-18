@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { ControlHint } from '../../features/navigation/ControlHint.tsx';
 import { InteractHint } from '../../features/navigation/InteractHint.tsx';
+import { NavigationToolbar } from '../../features/navigation/NavigationToolbar.tsx';
+import { TwoDView } from '../../features/navigation/TwoDView.tsx';
+import { useNavigation } from '../../store/navigation.ts';
 import { useInteractionKeys } from '../../features/navigation/useInteractionKeys.ts';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary.tsx';
 
@@ -38,30 +41,42 @@ interface OfficeViewProps {
   onError: (message: string) => void;
 }
 
-/** The 3D office. Shows the loading state until the canvas reports it has mounted. */
+/**
+ * The 3D office with its navigation toolbar. Shows the loading state until the
+ * canvas reports it has mounted. The 2D view replaces the canvas when chosen.
+ */
 export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeViewProps) {
   useInteractionKeys();
+  const view = useNavigation((s) => s.view);
+  const twoD = view === '2d';
   return (
-    <section className="office" aria-label="Office" aria-busy={!mounted}>
-      <div className="office-canvas" data-testid="office-canvas">
-        <CanvasErrorBoundary onError={onError}>
-          <Suspense fallback={null}>
-            <OfficeCanvas onReady={onReady} reducedMotion={reducedMotion} />
-          </Suspense>
-        </CanvasErrorBoundary>
-      </div>
-      {mounted && <InteractHint />}
-      {mounted && <ControlHint />}
-      {!mounted && (
-        <div className="office-loading">
-          <LoadingView />
-        </div>
+    <>
+      {mounted && <NavigationToolbar webgl />}
+      {twoD ? (
+        <TwoDView />
+      ) : (
+        <section className="office" aria-label="Office" aria-busy={!mounted}>
+          <div className="office-canvas" data-testid="office-canvas">
+            <CanvasErrorBoundary onError={onError}>
+              <Suspense fallback={null}>
+                <OfficeCanvas onReady={onReady} reducedMotion={reducedMotion} />
+              </Suspense>
+            </CanvasErrorBoundary>
+          </div>
+          {mounted && <InteractHint />}
+          {mounted && <ControlHint />}
+          {!mounted && (
+            <div className="office-loading">
+              <LoadingView />
+            </div>
+          )}
+        </section>
       )}
-    </section>
+    </>
   );
 }
 
-/** Non-3D path. Placeholder regions until E04 (team) and E06 (board). */
+/** Non-3D path: the same 2D view the user can choose, with zone selection only. */
 export function FallbackView() {
   return (
     <>
@@ -69,16 +84,8 @@ export function FallbackView() {
         <h2>The 3D office cannot start</h2>
         <p>WebGL is not available in this browser. You can still use the 2D view below.</p>
       </div>
-      <div className="shell-fallback">
-        <section className="shell-region" aria-labelledby="fallback-team-heading">
-          <h2 id="fallback-team-heading">Team</h2>
-          <p>No agents to show yet.</p>
-        </section>
-        <section className="shell-region" aria-labelledby="fallback-board-heading">
-          <h2 id="fallback-board-heading">Board</h2>
-          <p>No tasks to show yet.</p>
-        </section>
-      </div>
+      <NavigationToolbar webgl={false} />
+      <TwoDView />
     </>
   );
 }
