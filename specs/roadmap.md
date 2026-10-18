@@ -17,10 +17,10 @@ Status key: `todo` | `in-progress` | `done`
 | 2.3 | [S02-03](stories/S02-03-merge-policy.md) | Pull-request policy and QA failure | done |
 | 2.4 | [S02-04](stories/S02-04-metrics.md) | Mission-control metrics | done |
 | 2.5 | [S02-05](stories/S02-05-mock-service.md) | Mock service, scenarios, and effect guard | done |
-| 3 | [E03](epics/E03-office.md) | 3D office | in-progress |
+| 3 | [E03](epics/E03-office.md) | 3D office | done |
 | 3.1 | [S03-01](stories/S03-01-office-shell.md) | Lit office shell and zone layout | done |
 | 3.2 | [S03-02](stories/S03-02-furnishings.md) | Desks, board, QA corner, meeting area | done |
-| 3.3 | [S03-03](stories/S03-03-characters.md) | Characters bound to agent presence | todo |
+| 3.3 | [S03-03](stories/S03-03-characters.md) | Characters bound to agent presence | done |
 | 4 | [E04](epics/E04-navigation.md) | Movement and navigation | todo |
 | 4.1 | [S04-01](stories/S04-01-player-controls.md) | Walk, look, run, pointer lock | todo |
 | 4.2 | [S04-02](stories/S04-02-interact.md) | Proximity interaction and hints | todo |

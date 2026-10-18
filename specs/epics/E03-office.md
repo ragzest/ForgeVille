@@ -1,6 +1,6 @@
 # E03 — 3D office
 
-Status: in-progress
+Status: done
 
 ## Outcome
 
