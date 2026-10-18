@@ -1,6 +1,6 @@
 # S02-05 — Mock service, scenarios, and effect guard
 
-Status: todo
+Status: done
 Epic: [E02](../epics/E02-domain.md)
 Depends on: S02-02, S02-03, S02-04
 
