@@ -1,6 +1,6 @@
 # S02-03 — Pull-request policy and QA failure
 
-Status: todo
+Status: done
 Epic: [E02](../epics/E02-domain.md)
 Depends on: S02-02
 
