@@ -167,3 +167,83 @@ body {
   font: 600 0.75rem/1.5 var(--fv-font);
   text-align: center;
 }
+
+.interact-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 4rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fv-forest) 90%, transparent);
+  color: var(--fv-ivory);
+  font-weight: 600;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.interact-hint kbd,
+.panel kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  border-radius: 4px;
+  background: var(--fv-ivory);
+  color: var(--fv-charcoal);
+  font: 600 0.8rem/1.5 var(--fv-font);
+  text-align: center;
+  border: 1px solid var(--fv-grey);
+}
+
+/* Glass panel over the office. Never covers its own close button. */
+.panel {
+  position: fixed;
+  top: 4.5rem;
+  right: 1rem;
+  z-index: 20;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 6rem);
+  overflow: auto;
+  padding: 1rem 1.25rem;
+  border-radius: var(--fv-radius);
+  background: color-mix(in srgb, var(--fv-ivory) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--fv-forest) 25%, transparent);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.15);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.panel-close {
+  font: 600 1.25rem/1 var(--fv-font);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  border: 0;
+  background: var(--fv-forest);
+  color: var(--fv-ivory);
+  cursor: pointer;
+}
+
+.panel-close:focus-visible {
+  outline: 3px solid var(--fv-emerald);
+  outline-offset: 2px;
+}
+
+.panel-note {
+  color: color-mix(in srgb, var(--fv-charcoal) 75%, transparent);
+  font-size: 0.9rem;
+}

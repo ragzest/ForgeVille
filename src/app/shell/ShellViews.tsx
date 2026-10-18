@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { ControlHint } from '../../features/navigation/ControlHint.tsx';
+import { InteractHint } from '../../features/navigation/InteractHint.tsx';
+import { useInteractionKeys } from '../../features/navigation/useInteractionKeys.ts';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary.tsx';
 
 interface ErrorViewProps {
@@ -38,6 +40,7 @@ interface OfficeViewProps {
 
 /** The 3D office. Shows the loading state until the canvas reports it has mounted. */
 export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeViewProps) {
+  useInteractionKeys();
   return (
     <section className="office" aria-label="Office" aria-busy={!mounted}>
       <div className="office-canvas" data-testid="office-canvas">
@@ -47,6 +50,7 @@ export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeV
           </Suspense>
         </CanvasErrorBoundary>
       </div>
+      {mounted && <InteractHint />}
       {mounted && <ControlHint />}
       {!mounted && (
         <div className="office-loading">

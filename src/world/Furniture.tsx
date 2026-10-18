@@ -1,5 +1,6 @@
 import { COLUMN_LABELS, TASK_COLUMNS, type TaskColumn } from '../domain/index.ts';
 import { COLORS } from '../ui/tokens.ts';
+import { interactProps } from './interactable.ts';
 import { floorLabel } from './labels.ts';
 import {
   DESK,
@@ -75,7 +76,12 @@ function Desk({ desk, name }: { desk: DeskAssignment; name: string }) {
   const { x, z } = desk.slot;
   const top = DESK.height;
   return (
-    <group name={desk.id} userData={{ interactiveId: desk.id, agentId: desk.agentId }} position={[x, 0, z]}>
+    <group
+      name={desk.id}
+      userData={{ interactiveId: desk.id, agentId: desk.agentId }}
+      position={[x, 0, z]}
+      {...interactProps({ id: desk.id, label: `${name}'s desk` })}
+    >
       <Box position={[0, top - 0.03, 0]} size={[DESK.width, 0.06, DESK.depth]} material={MATERIALS.deskTop} />
       <Box position={[-DESK.width / 2 + 0.05, (top - 0.06) / 2, 0]} size={[0.06, top - 0.06, DESK.depth - 0.06]} />
       <Box position={[DESK.width / 2 - 0.05, (top - 0.06) / 2, 0]} size={[0.06, top - 0.06, DESK.depth - 0.06]} />
@@ -103,7 +109,7 @@ function KanbanBoard() {
   const height = 1.5;
   const lane = width / TASK_COLUMNS.length;
   return (
-    <group name="board" userData={{ interactiveId: 'board' }} position={[footprint.center.x, 1.55, footprint.center.z]} rotation-y={Math.PI / 2}>
+    <group name="board" userData={{ interactiveId: 'board' }} {...interactProps(landmark('board'))} position={[footprint.center.x, 1.55, footprint.center.z]} rotation-y={Math.PI / 2}>
       <Box position={[0, 0, -0.02]} size={[width + 0.12, height + 0.12, 0.04]} material={MATERIALS.metal} />
       <Box position={[0, 0, 0.01]} size={[width, height, 0.03]} material={MATERIALS.whiteboard} />
       {TASK_COLUMNS.map((column, i) => {
@@ -129,7 +135,7 @@ function QaLab() {
   const { footprint } = landmark('qa-screen');
   return (
     <group name="qa-lab">
-      <group name="qa-screen" userData={{ interactiveId: 'qa-screen' }} position={[footprint.center.x, 1.75, footprint.center.z]}>
+      <group name="qa-screen" userData={{ interactiveId: 'qa-screen' }} {...interactProps(landmark('qa-screen'))} position={[footprint.center.x, 1.75, footprint.center.z]}>
         <Box position={[0, 0, 0]} size={[footprint.width + 0.1, 1.35, 0.06]} material={MATERIALS.metal} />
         <Box position={[0, 0, 0.035]} size={[footprint.width, 1.25, 0.02]} material={MATERIALS.screen} />
         <Plate text="QA · simulated checks" height={0.16} position={[0, 0.45, 0.05]} />
@@ -159,7 +165,7 @@ function QaStation({ at }: { at: Point2 }) {
 function StatusDisplay({ projectName }: { projectName: string }) {
   const { footprint } = landmark('status-display');
   return (
-    <group name="status-display" userData={{ interactiveId: 'status-display' }} position={[footprint.center.x, 0, footprint.center.z]}>
+    <group name="status-display" userData={{ interactiveId: 'status-display' }} {...interactProps(landmark('status-display'))} position={[footprint.center.x, 0, footprint.center.z]}>
       <Box position={[0, 0.03, 0]} size={[footprint.width * 0.5, 0.06, footprint.depth]} material={MATERIALS.metal} />
       <Box position={[0, 0.65, 0]} size={[0.08, 1.2, 0.08]} material={MATERIALS.metal} />
       <Box position={[0, 1.5, 0]} size={[footprint.width, 0.95, 0.1]} material={MATERIALS.screen} />
@@ -173,7 +179,7 @@ function Reception({ projectName }: { projectName: string }) {
   const { footprint } = landmark('reception');
   const { x, z } = footprint.center;
   return (
-    <group name="reception" userData={{ interactiveId: 'reception' }} position={[x, 0, z]}>
+    <group name="reception" userData={{ interactiveId: 'reception' }} {...interactProps(landmark('reception'))} position={[x, 0, z]}>
       <Box position={[0, 0.55, 0]} size={[footprint.width, 1.1, footprint.depth]} />
       <Box position={[0, 1.12, 0]} size={[footprint.width + 0.12, 0.05, footprint.depth + 0.12]} material={MATERIALS.deskTop} />
       <Monitor position={[0.15, 1.14, -0.6]} />

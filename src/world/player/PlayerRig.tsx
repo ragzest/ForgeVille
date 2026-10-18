@@ -1,15 +1,18 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
+import { interactionStore } from '../../store/interaction.ts';
+import { nearestTarget, type InteractionTarget } from '../interaction.ts';
 import { PLAYER_SPAWN, playerColliders } from '../layout.ts';
 import { NO_INPUT, isKeyCaptureTarget, trackMovementKeys, type KeyTracker } from './input.ts';
 import { EYE_HEIGHT, look, stepPlayer, type PlayerPose } from './movement.ts';
 
 /**
  * First-person player. All control state lives in refs and is read inside the
- * frame loop, so moving never re-renders React panels. Click the canvas to
- * lock the pointer; Escape (handled by the browser) releases it.
+ * frame loop, so moving never re-renders React panels. The canvas locks the
+ * pointer on a click that misses every object; Escape (handled by the browser)
+ * releases it. The nearest interactive target is published only when it changes.
  */
-export function PlayerRig() {
+export function PlayerRig({ targets }: { targets: readonly InteractionTarget[] }) {
   const canvas = useThree((s) => s.gl.domElement);
   const colliders = useMemo(() => playerColliders(), []);
   const pose = useRef<PlayerPose>({ ...PLAYER_SPAWN });
@@ -27,15 +30,6 @@ export function PlayerRig() {
 
   useEffect(() => {
     const locked = () => document.pointerLockElement === canvas;
-    const onClick = () => {
-      if (locked()) return;
-      try {
-        // Older browsers return undefined; newer ones a promise that may reject.
-        void Promise.resolve(canvas.requestPointerLock()).catch(() => undefined);
-      } catch {
-        // Pointer lock unavailable (e.g. some embedded browsers); keyboard movement still works.
-      }
-    };
     const onMouseMove = (e: MouseEvent) => {
       if (locked()) pose.current = look(pose.current, e.movementX, e.movementY);
     };
@@ -43,11 +37,9 @@ export function PlayerRig() {
     const onFocusIn = () => {
       if (locked() && isKeyCaptureTarget(document.activeElement)) document.exitPointerLock();
     };
-    canvas.addEventListener('click', onClick);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('focusin', onFocusIn);
     return () => {
-      canvas.removeEventListener('click', onClick);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('focusin', onFocusIn);
       if (locked()) document.exitPointerLock();
@@ -62,6 +54,10 @@ export function PlayerRig() {
     camera.rotation.order = 'YXZ';
     camera.position.set(next.x, EYE_HEIGHT, next.z);
     camera.rotation.set(next.pitch, next.yaw, 0);
+
+    // The store ignores repeats, so this only notifies when the focus changes.
+    const focus = nearestTarget(next, targets);
+    interactionStore.getState().setFocused(focus);
 
     // Position for end-to-end tests, written straight to the DOM (no React).
     const position = `${next.x.toFixed(2)},${next.z.toFixed(2)}`;

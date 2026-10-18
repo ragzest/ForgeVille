@@ -209,7 +209,7 @@ export interface Landmark {
   readonly label: string;
   readonly zone: ZoneId;
   readonly footprint: Footprint;
-  /** Where a visitor stands to use it. */
+  /** Where a visitor stands to use it: within reach (see INTERACT_RADIUS). */
   readonly approach: Point2;
 }
 
@@ -220,28 +220,28 @@ export const LANDMARKS: readonly Landmark[] = [
     label: 'Kanban board',
     zone: 'board',
     footprint: { center: { x: -11.74, z: -2 }, width: 0.1, depth: 4.2 },
-    approach: { x: -8.2, z: -2 },
+    approach: { x: -10.5, z: -2 },
   },
   {
     id: 'qa-screen',
     label: 'QA screen',
     zone: 'qa',
     footprint: { center: { x: 8.5, z: -6.9 }, width: 2.4, depth: 0.1 },
-    approach: { x: 8.5, z: -0.8 },
+    approach: { x: 8.5, z: -5.55 },
   },
   {
     id: 'status-display',
     label: 'Project status display',
     zone: 'status',
     footprint: { center: { x: -1, z: 6.8 }, width: 2.6, depth: 0.5 },
-    approach: { x: -1, z: 4.6 },
+    approach: { x: -1, z: 5.6 },
   },
   {
     id: 'reception',
     label: 'Reception',
     zone: 'reception',
     footprint: { center: { x: 9.2, z: 5 }, width: 1, depth: 3 },
-    approach: { x: 6.5, z: 5 },
+    approach: { x: 7.6, z: 5 },
   },
 ];
 

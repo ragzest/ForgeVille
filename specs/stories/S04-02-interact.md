@@ -1,6 +1,6 @@
 # S04-02 — Proximity interaction and hints
 
-Status: todo
+Status: done
 Epic: [E04](../epics/E04-navigation.md)
 Depends on: S04-01, S03-02
 
