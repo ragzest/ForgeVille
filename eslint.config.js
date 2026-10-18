@@ -40,6 +40,14 @@ export default defineConfig([
     },
   },
   {
+    // React Three Fiber elements take three.js props that this DOM-oriented
+    // rule doesn't know; TypeScript checks them instead.
+    files: ['src/world/**/*.tsx'],
+    rules: {
+      'react/no-unknown-property': 'off',
+    },
+  },
+  {
     files: ['*.config.{js,ts}', 'e2e/**/*.ts'],
     languageOptions: {
       globals: globals.node,

@@ -1,6 +1,6 @@
 # S03-01 — Lit office shell and zone layout
 
-Status: todo
+Status: done
 Epic: [E03](../epics/E03-office.md)
 Depends on: S01-02, S02-05
 

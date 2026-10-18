@@ -109,3 +109,33 @@ body {
 .shell-overlays:empty {
   display: none;
 }
+
+.office {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 60vh;
+}
+
+.office-canvas {
+  flex: 1;
+  min-height: 60vh;
+  border-radius: var(--fv-radius);
+  overflow: hidden;
+  background: var(--fv-ivory);
+  border: 1px solid var(--fv-grey);
+}
+
+.office-canvas canvas {
+  display: block;
+}
+
+.office-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--fv-ivory);
+  border-radius: var(--fv-radius);
+}
+

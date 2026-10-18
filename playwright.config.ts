@@ -22,7 +22,11 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        ...(executablePath ? { launchOptions: { executablePath } } : {}),
+        launchOptions: {
+          // Software WebGL, so the 3D smoke test does not depend on a GPU.
+          args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+          ...(executablePath ? { executablePath } : {}),
+        },
       },
     },
   ],

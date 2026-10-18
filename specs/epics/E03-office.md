@@ -1,6 +1,6 @@
 # E03 — 3D office
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 

@@ -1,3 +1,6 @@
+import { lazy, Suspense } from 'react';
+import { CanvasErrorBoundary } from './CanvasErrorBoundary.tsx';
+
 interface ErrorViewProps {
   message: string;
   onRetry: () => void;
@@ -23,10 +26,31 @@ export function ErrorView({ message, onRetry }: ErrorViewProps) {
   );
 }
 
-export function OfficeView() {
+const OfficeCanvas = lazy(() => import('../../world/OfficeCanvas.tsx'));
+
+interface OfficeViewProps {
+  mounted: boolean;
+  reducedMotion: boolean;
+  onReady: () => void;
+  onError: (message: string) => void;
+}
+
+/** The 3D office. Shows the loading state until the canvas reports it has mounted. */
+export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeViewProps) {
   return (
-    <section className="shell-region" aria-label="Office">
-      <p>The 3D office will appear here.</p>
+    <section className="office" aria-label="Office" aria-busy={!mounted}>
+      <div className="office-canvas" data-testid="office-canvas">
+        <CanvasErrorBoundary onError={onError}>
+          <Suspense fallback={null}>
+            <OfficeCanvas onReady={onReady} reducedMotion={reducedMotion} />
+          </Suspense>
+        </CanvasErrorBoundary>
+      </div>
+      {!mounted && (
+        <div className="office-loading">
+          <LoadingView />
+        </div>
+      )}
     </section>
   );
 }
