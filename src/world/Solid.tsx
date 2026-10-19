@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import type { Material } from 'three';
 import { FloorSceneContext, type FloorScene } from './floorScene.ts';
 import { GEOMETRIES, OUTLINE_MATERIAL, hullGeometry, themeMaterials, wantsOutline, type GeometryName } from './materials.ts';
+import { isSmallProp } from './quality.ts';
+import { useSceneQuality } from './qualityContext.ts';
 
 export type Vec3 = [number, number, number];
 
@@ -23,7 +25,7 @@ export interface SolidProps {
   position?: Vec3;
   scale?: Vec3;
   rotation?: Vec3;
-  /** Ink outline; on by default for lit materials, never for glows. */
+  /** Ink outline; on by default for lit materials, never for glows. Low quality drops it on small props. */
   outline?: boolean;
   castShadow?: boolean;
   receiveShadow?: boolean;
@@ -35,7 +37,8 @@ export interface SolidProps {
  */
 export function Solid({ geometry = 'box', material, position = ORIGIN, scale = UNIT, rotation = ORIGIN, outline, castShadow = true, receiveShadow = true }: SolidProps) {
   const geo = GEOMETRIES[geometry];
-  const inked = outline ?? wantsOutline(material);
+  const { rules } = useSceneQuality();
+  const inked = (outline ?? wantsOutline(material)) && (rules.smallPropOutlines || !isSmallProp(scale));
   return (
     <mesh geometry={geo} material={material} position={position} scale={scale} rotation={rotation} castShadow={castShadow} receiveShadow={receiveShadow}>
       {inked && <mesh geometry={hullGeometry(geo)} material={OUTLINE_MATERIAL} raycast={() => null} />}

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { glowLayerWhen } from './glow.ts';
 import { floorLabel } from './labels.ts';
 import { CEILING_LAMPS, FLOOR, WALL, WINDOW_HEIGHT, WINDOW_SILL, WINDOWS, ZONES, wallLength, wallPieces, type WallSide, type Zone } from './layout.ts';
 import { GEOMETRIES } from './materials.ts';
@@ -92,7 +93,8 @@ function Ceiling() {
       <mesh geometry={GEOMETRIES.plane} material={materials.ceiling} rotation-x={Math.PI / 2} position-y={WALL.height} scale={[FLOOR.width + T * 2, FLOOR.depth + T * 2, 1]} />
       {CEILING_LAMPS.map((p) => (
         <group key={`${String(p.x)}:${String(p.z)}`} position={[p.x, 0, p.z]}>
-          <mesh geometry={GEOMETRIES.plane} material={materials.lamp} rotation-x={Math.PI / 2} position-y={WALL.height - 0.01} scale={[1.4, 0.5, 1]} />
+          {/* Lit lamps join the glow layer; by day they are just pale panels. */}
+          <mesh ref={glowLayerWhen(lampsOn)} geometry={GEOMETRIES.plane} material={materials.lamp} rotation-x={Math.PI / 2} position-y={WALL.height - 0.01} scale={[1.4, 0.5, 1]} />
           {lampsOn && (
             <mesh geometry={GEOMETRIES.plane} material={materials.lampPool} rotation-x={-Math.PI / 2} position-y={0.02} scale={[4.2, 4.2, 1]} />
           )}

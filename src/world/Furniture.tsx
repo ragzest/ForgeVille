@@ -1,33 +1,27 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
-import type { Mesh } from 'three';
+import type { Group, Mesh } from 'three';
 import { COLORS } from '../ui/tokens.ts';
 import { interactProps } from './interactable.ts';
 import { floorLabel } from './labels.ts';
-import {
-  COFFEE_CART,
-  DESK,
-  FLOOR,
-  LANDMARKS,
-  MEETING_TABLE,
-  PLANTS,
-  QA_STATION,
-  QA_STATIONS,
-  type LandmarkId,
-  type Point2,
-} from './layout.ts';
+import { onGlowLayer } from './glow.ts';
+import { InstancedProps } from './InstancedProps.tsx';
+import { COFFEE_CART, DESK, FLOOR, LANDMARKS, MEETING_TABLE, QA_STATION, QA_STATIONS, type LandmarkId, type Point2 } from './layout.ts';
 import { GEOMETRIES, MATERIALS, glow, toon } from './materials.ts';
 import { paintBoard, paintQa, paintStatus, type BoardColumn, type QaDisplay, type StatusTile } from './screens/displays.ts';
 import type { DeskView } from './deskViews.ts';
 import { paintScreen } from './screens/drawTerminal.ts';
 import { VACANT_SCREEN, type ScreenModel } from './screens/screenModel.ts';
 import { useFloorScene } from './floorScene.ts';
+import { DESK_MONITOR, MONITOR_SCREEN, MONITOR_SCREEN_Y, QA_MONITOR, RECEPTION_MONITOR } from './props.ts';
+import { useThrottledScreen } from './screens/useThrottledScreen.ts';
 import { Solid, type Vec3 } from './Solid.tsx';
 import { usePaintedTexture } from './useTexture.ts';
 
 /**
  * Cel-shaded furnishings. Every solid reuses the shared unit geometries and
- * the floor's materials, scaled per mesh. Screens and the whiteboard paint the
+ * the floor's materials, scaled per mesh. Chairs, plants, and monitor bodies
+ * are instanced (`InstancedProps`). Screens and the whiteboard paint the
  * snapshot onto canvas textures; they only read it.
  */
 
@@ -49,7 +43,7 @@ function Plate({ text, height, position, rotationY = 0, colors }: { text: string
   return <mesh geometry={GEOMETRIES.plane} material={label.material} position={position} rotation-y={rotationY} scale={[height * label.aspect, height, 1]} />;
 }
 
-const SCREEN = { width: 0.78, height: 0.47 } as const;
+const SCREEN = MONITOR_SCREEN;
 
 /** Blinking prompt cursor; steady when motion is reduced. */
 function Cursor({ position, color }: { position: Vec3; color: string }) {
@@ -61,17 +55,20 @@ function Cursor({ position, color }: { position: Vec3; color: string }) {
   return <mesh ref={ref} geometry={GEOMETRIES.plane} material={glow(color)} position={position} scale={[0.022, 0.034, 1]} />;
 }
 
-/** A monitor facing south (+z) showing a painted terminal or screensaver. */
-function Monitor({ position, model, rotationY = 0 }: { position: Vec3; model: ScreenModel; rotationY?: number }) {
+/**
+ * A monitor's screen, facing south (+z), showing a painted terminal or
+ * screensaver. Its stand and bezel are instanced with the other monitors.
+ * Far screens repaint late or not at all (`useThrottledScreen`).
+ */
+function MonitorScreen({ position, model: latest, rotationY = 0 }: { position: Vec3; model: ScreenModel; rotationY?: number }) {
+  const anchor = useRef<Group>(null);
+  const model = useThrottledScreen(latest, anchor);
   const painted = paintScreen(model);
   const cursor = painted?.cursor;
-  const sy = 0.42;
+  const sy = MONITOR_SCREEN_Y;
   return (
-    <group position={position} rotation-y={rotationY}>
-      <Solid material={MATERIALS.metal} position={[0, 0.01, 0]} scale={[0.26, 0.02, 0.18]} />
-      <Solid material={MATERIALS.metal} position={[0, 0.17, -0.02]} scale={[0.05, 0.32, 0.04]} />
-      <Solid material={MATERIALS.bezel} position={[0, sy, -0.015]} scale={[SCREEN.width + 0.06, SCREEN.height + 0.06, 0.04]} />
-      <mesh geometry={GEOMETRIES.plane} position={[0, sy, 0.007]} scale={[SCREEN.width, SCREEN.height, 1]}>
+    <group ref={anchor} position={position} rotation-y={rotationY}>
+      <mesh ref={onGlowLayer} geometry={GEOMETRIES.plane} position={[0, sy, 0.007]} scale={[SCREEN.width, SCREEN.height, 1]}>
         {painted ? <meshBasicMaterial map={painted.texture} toneMapped={false} /> : <meshBasicMaterial color={COLORS.screen} />}
       </mesh>
       {cursor && (
@@ -80,19 +77,6 @@ function Monitor({ position, model, rotationY = 0 }: { position: Vec3; model: Sc
           color={model.runtime.accent}
         />
       )}
-    </group>
-  );
-}
-
-function Chair({ position, rotationY = 0 }: { position: Vec3; rotationY?: number }) {
-  const { materials } = useFloorScene();
-  return (
-    <group position={position} rotation-y={rotationY}>
-      <Solid material={materials.fabric} position={[0, 0.46, 0]} scale={[0.52, 0.09, 0.5]} />
-      <Solid material={materials.fabric} position={[0, 0.8, 0.23]} scale={[0.5, 0.56, 0.08]} />
-      <Solid material={MATERIALS.metal} position={[0, 0.23, 0]} scale={[0.06, 0.42, 0.06]} outline={false} />
-      <Solid material={MATERIALS.metal} position={[0, 0.04, 0]} scale={[0.5, 0.04, 0.06]} />
-      <Solid material={MATERIALS.metal} position={[0, 0.04, 0]} scale={[0.06, 0.04, 0.5]} />
     </group>
   );
 }
@@ -137,12 +121,11 @@ function Desk({ view, index }: { view: DeskView; index: number }) {
       <Solid material={materials.wood} position={[-DESK.width / 2 + 0.06, (top - 0.06) / 2, 0]} scale={[0.07, top - 0.06, DESK.depth - 0.08]} />
       <Solid material={materials.wood} position={[DESK.width / 2 - 0.06, (top - 0.06) / 2, 0]} scale={[0.07, top - 0.06, DESK.depth - 0.08]} />
       <Solid material={materials.wood} position={[0, top - 0.3, -DESK.depth / 2 + 0.05]} scale={[DESK.width - 0.14, 0.4, 0.04]} castShadow={false} />
-      <Monitor position={[0, top, -0.2]} model={view.screen} />
+      <MonitorScreen position={[DESK_MONITOR.x, top, DESK_MONITOR.z]} model={view.screen} />
       <Solid material={MATERIALS.bezel} position={[0, top + 0.015, 0.12]} scale={[0.46, 0.03, 0.15]} />
       <DeskClutter index={index} top={top} />
       {/* Light from the screen pooling on the desk. */}
       <mesh geometry={GEOMETRIES.plane} material={materials.screenPool} rotation-x={-Math.PI / 2} position={[0, top + 0.002, 0.05]} scale={[1.5, 0.9, 1]} />
-      <Chair position={[0, 0, 0.75]} />
     </group>
   );
 }
@@ -188,7 +171,7 @@ function QaLab({ qa, qaKey }: { qa: QaDisplay; qaKey: string }) {
     <group name="qa-lab">
       <group name="qa-screen" userData={{ interactiveId: 'qa-screen' }} {...handlers} position={[footprint.center.x, 1.75, footprint.center.z]}>
         <Solid material={MATERIALS.bezel} position={[0, 0, -0.01]} scale={[footprint.width + 0.12, 1.37, 0.06]} />
-        <mesh geometry={GEOMETRIES.plane} position={[0, 0, 0.025]} scale={[footprint.width, 1.25, 1]}>
+        <mesh ref={onGlowLayer} geometry={GEOMETRIES.plane} position={[0, 0, 0.025]} scale={[footprint.width, 1.25, 1]}>
           {texture ? <meshBasicMaterial map={texture} toneMapped={false} /> : <meshBasicMaterial color={COLORS.screen} />}
         </mesh>
         <Solid material={materials.accent} position={[0, -0.72, 0.02]} scale={[footprint.width + 0.12, 0.06, 0.08]} />
@@ -209,13 +192,12 @@ function QaStation({ at, index }: { at: Point2; index: number }) {
     <group position={[at.x, 0, at.z]}>
       <Solid material={materials.deskTop} position={[0, top - 0.03, 0]} scale={[QA_STATION.width, 0.06, QA_STATION.depth]} />
       <Solid material={materials.wood} position={[0, (top - 0.06) / 2, 0]} scale={[QA_STATION.width - 0.2, top - 0.06, 0.08]} />
-      <Monitor position={[-0.42, top, -0.2]} model={QA_SCREEN_MODEL} />
+      <MonitorScreen position={[QA_MONITOR.x, top, QA_MONITOR.z]} model={QA_SCREEN_MODEL} />
       {/* A phone and a tablet on stands, for device testing. */}
       <Solid material={MATERIALS.bezel} position={[0.45, top + 0.12, -0.1]} scale={[0.12, 0.22, 0.02]} rotation={[-0.2, 0, 0]} />
       <Solid material={MATERIALS.bezel} position={[0.15, top + 0.13, -0.1]} scale={[0.3, 0.22, 0.02]} rotation={[-0.2, 0, 0]} />
-      <mesh geometry={GEOMETRIES.plane} material={glow(index % 2 ? '#4cc9f0' : '#80ed99')} position={[0.45, top + 0.12, -0.087]} rotation-x={-0.2} scale={[0.1, 0.19, 1]} />
-      <mesh geometry={GEOMETRIES.plane} material={glow('#ffd166')} position={[0.15, top + 0.13, -0.087]} rotation-x={-0.2} scale={[0.27, 0.19, 1]} />
-      <Chair position={[0, 0, 0.75]} />
+      <mesh ref={onGlowLayer} geometry={GEOMETRIES.plane} material={glow(index % 2 ? '#4cc9f0' : '#80ed99')} position={[0.45, top + 0.12, -0.087]} rotation-x={-0.2} scale={[0.1, 0.19, 1]} />
+      <mesh ref={onGlowLayer} geometry={GEOMETRIES.plane} material={glow('#ffd166')} position={[0.15, top + 0.13, -0.087]} rotation-x={-0.2} scale={[0.27, 0.19, 1]} />
     </group>
   );
 }
@@ -231,7 +213,7 @@ function StatusDisplay({ title, tiles, statusKey }: { title: string; tiles: read
       <Solid material={materials.trim} position={[0, 0.65, 0]} scale={[0.1, 1.2, 0.1]} />
       <Solid material={MATERIALS.bezel} position={[0, 1.5, 0]} scale={[footprint.width, 0.98, 0.1]} />
       {/* Faces north, towards the approach spot. */}
-      <mesh geometry={GEOMETRIES.plane} position={[0, 1.5, -0.052]} rotation-y={Math.PI} scale={[footprint.width - 0.08, 0.9, 1]}>
+      <mesh ref={onGlowLayer} geometry={GEOMETRIES.plane} position={[0, 1.5, -0.052]} rotation-y={Math.PI} scale={[footprint.width - 0.08, 0.9, 1]}>
         {texture ? <meshBasicMaterial map={texture} toneMapped={false} /> : <meshBasicMaterial color={COLORS.screen} />}
       </mesh>
       <Solid material={materials.accent} position={[0, 1.02, 0]} scale={[footprint.width, 0.05, 0.12]} />
@@ -249,9 +231,12 @@ function Reception({ plaque }: { plaque: string }) {
     <group name="reception" userData={{ interactiveId: 'reception' }} {...handlers} position={[x, 0, z]}>
       <Solid material={materials.accent} position={[0, 0.55, 0]} scale={[footprint.width, 1.1, footprint.depth]} />
       <Solid material={materials.deskTop} position={[0, 1.12, 0]} scale={[footprint.width + 0.14, 0.06, footprint.depth + 0.14]} />
-      <Monitor position={[0.15, 1.15, -0.7]} model={{ ...VACANT_SCREEN, key: `reception|${plaque}`, caption: ['Welcome', plaque] }} rotationY={-Math.PI / 2} />
+      <MonitorScreen
+        position={[RECEPTION_MONITOR.x, RECEPTION_MONITOR.y, RECEPTION_MONITOR.z]}
+        model={{ ...VACANT_SCREEN, key: `reception|${plaque}`, caption: ['Welcome', plaque] }}
+        rotationY={RECEPTION_MONITOR.rotationY}
+      />
       <Solid geometry="sphere" material={toon('#ffd166')} position={[0.1, 1.2, 0.9]} scale={[0.12, 0.08, 0.12]} />
-      <Chair position={[0.9, 0, 0]} rotationY={-Math.PI / 2} />
       {/* Project plaque on the east wall behind the counter. */}
       <Plate text={plaque} height={0.5} position={[2.75, 1.95, 0]} rotationY={-Math.PI / 2} colors={accent} />
       <Plate text={plaque} height={0.24} position={[-footprint.width / 2 - 0.01, 0.75, 0]} rotationY={-Math.PI / 2} />
@@ -286,7 +271,8 @@ function Elevator() {
 
 function MeetingArea() {
   const { materials } = useFloorScene();
-  const { center, radius, height, chairs } = MEETING_TABLE;
+  // Its chairs are instanced with the others (`props.ts`).
+  const { center, radius, height } = MEETING_TABLE;
   return (
     <group name="meeting-table" position={[center.x, 0, center.z]}>
       <Solid geometry="cylinder" material={materials.deskTop} position={[0, height - 0.03, 0]} scale={[radius * 2, 0.06, radius * 2]} />
@@ -295,12 +281,6 @@ function MeetingArea() {
       <Solid geometry="cylinder" material={toon('#ffffff')} position={[0, height + 0.1, 0]} scale={[0.16, 0.2, 0.16]} />
       <Solid geometry="blob" material={toon('#ffd166')} position={[0.03, height + 0.27, 0]} scale={[0.12, 0.12, 0.12]} />
       <Solid geometry="blob" material={toon('#ff6fb5')} position={[-0.05, height + 0.25, 0.04]} scale={[0.1, 0.1, 0.1]} />
-      {Array.from({ length: chairs }, (_, i) => {
-        const angle = (i / chairs) * Math.PI * 2;
-        const r = radius + 0.45;
-        // Chairs face the table: their backs point away from the centre.
-        return <Chair key={i} position={[Math.sin(angle) * r, 0, Math.cos(angle) * r]} rotationY={angle} />;
-      })}
     </group>
   );
 }
@@ -317,31 +297,6 @@ function CoffeeCart() {
       <mesh geometry={GEOMETRIES.sphere} material={glow(floor.theme.accent)} position={[-0.15, height + 0.34, -0.14]} scale={[0.05, 0.05, 0.02]} />
       <Solid geometry="cylinder" material={toon('#fffdf6')} position={[0.22, height + 0.1, 0]} scale={[0.12, 0.16, 0.12]} />
       <Solid geometry="cylinder" material={toon('#fffdf6')} position={[0.22, height + 0.2, 0]} scale={[0.12, 0.04, 0.12]} />
-    </group>
-  );
-}
-
-function Plant({ at, index }: { at: Point2; index: number }) {
-  const { materials } = useFloorScene();
-  // Deterministic variety from the plant's index, not Math.random.
-  const scale = 0.85 + ((index * 37) % 5) * 0.08;
-  const tall = index % 3 === 0;
-  return (
-    <group position={[at.x, 0, at.z]} scale={scale}>
-      <Solid geometry="cylinder" material={materials.pot} position={[0, 0.22, 0]} scale={[0.44, 0.44, 0.44]} />
-      <Solid geometry="cylinder" material={materials.skirting} position={[0, 0.45, 0]} scale={[0.47, 0.05, 0.47]} />
-      {tall ? (
-        <>
-          <Solid geometry="cylinder" material={materials.wood} position={[0, 0.8, 0]} scale={[0.05, 0.7, 0.05]} />
-          <Solid geometry="blob" material={materials.leafDark} position={[0, 1.2, 0]} scale={[0.7, 0.75, 0.7]} />
-          <Solid geometry="blob" material={materials.leaf} position={[0.1, 1.5, 0.05]} scale={[0.5, 0.55, 0.5]} rotation={[0, index, 0]} />
-        </>
-      ) : (
-        <>
-          <Solid geometry="blob" material={materials.leafDark} position={[0, 0.72, 0]} scale={[0.75, 0.8, 0.75]} />
-          <Solid geometry="blob" material={materials.leaf} position={[0.12, 1.0, 0.05]} scale={[0.5, 0.55, 0.5]} rotation={[0, index, 0]} />
-        </>
-      )}
     </group>
   );
 }
@@ -418,9 +373,7 @@ export function Furniture({ desks, plaque, board, qa, status }: FurnitureProps) 
       <MeetingArea />
       <CoffeeCart />
       <Posters />
-      {PLANTS.map((p, i) => (
-        <Plant key={`${String(p.x)}:${String(p.z)}`} at={p} index={i} />
-      ))}
+      <InstancedProps desks={desks} />
       {floor.theme.lush && HANGING_PLANTERS.map((p) => <HangingPlanter key={`${String(p.x)}:${String(p.z)}`} at={p} />)}
     </group>
   );

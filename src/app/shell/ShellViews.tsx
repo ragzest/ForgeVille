@@ -6,6 +6,9 @@ import { InteractHint } from '../../features/navigation/InteractHint.tsx';
 import { NavigationToolbar } from '../../features/navigation/NavigationToolbar.tsx';
 import { TwoDView } from '../../features/navigation/TwoDView.tsx';
 import { useNavigation } from '../../store/navigation.ts';
+import { PerfReadout } from '../../features/quality/PerfReadout.tsx';
+import { QualityToast } from '../../features/quality/QualityToast.tsx';
+import { PERF_READOUT } from '../../world/perfStats.ts';
 import { useInteractionKeys } from '../../features/navigation/useInteractionKeys.ts';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary.tsx';
 
@@ -84,6 +87,8 @@ export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeV
           {mounted && <FloorBanner />}
           {mounted && <InteractHint />}
           {mounted && <ControlHint />}
+          {mounted && <QualityToast />}
+          {mounted && PERF_READOUT && <PerfReadout />}
           {!mounted && (
             <div className="office-loading">
               <LoadingView />
