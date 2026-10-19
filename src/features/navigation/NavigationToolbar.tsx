@@ -1,4 +1,5 @@
 import { interactionStore } from '../../store/interaction.ts';
+import { openBoard } from '../board/openBoard.ts';
 import { useNavigation, type OfficeView } from '../../store/navigation.ts';
 import { FLOORS, floorTitle } from '../../world/building.ts';
 import { TRAVEL_ZONES, zoneById } from '../../world/layout.ts';
@@ -47,7 +48,11 @@ export function NavigationToolbar({ webgl }: Props) {
             // In 3D the button walks you there; in the 2D view it highlights the zone.
             onClick={() => {
               if (webgl && view !== '2d') travelTo(id);
-              else selectZone(id);
+              else {
+                selectZone(id);
+                // In 2D, choosing the board opens it, like walking up to the whiteboard.
+                if (id === 'board') openBoard();
+              }
             }}
           >
             {zoneById(id).label}

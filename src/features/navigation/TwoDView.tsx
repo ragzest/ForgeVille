@@ -1,10 +1,12 @@
-import { COLUMN_LABELS, TASK_COLUMNS, presenceOf } from '../../domain/index.ts';
+import { presenceOf } from '../../domain/index.ts';
 import { useNavigation } from '../../store/navigation.ts';
 import { useWorkflow } from '../../store/context.ts';
 import { TRAVEL_ZONES, zoneById, type ZoneId } from '../../world/layout.ts';
 import { interactionStore, useInteraction } from '../../store/interaction.ts';
 import { deskLabel } from '../../world/interaction.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
+import { BOARD_TARGET, boardFloor, openBoard } from '../board/openBoard.ts';
+import { PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
 import { deskId } from '../desks/deskDetails.ts';
 import { buildingDirectory, floorById, floorTitle } from '../../world/building.ts';
 
@@ -33,7 +35,7 @@ export function TwoDView() {
   const home = buildingDirectory(snapshot).find((o) => o.project !== null);
   const vacant = home !== undefined && home.floor.id !== floorId;
 
-  const agentName = (id: string | null) => snapshot.agents.find((a) => a.id === id)?.name ?? 'Unassigned';
+  const board = floorBoard(snapshot, boardFloor(snapshot, floorId));
 
   return (
     <div className="two-d">
@@ -59,7 +61,15 @@ export function TwoDView() {
         <ul className="two-d-list">
           {TRAVEL_ZONES.map((id) => (
             <li key={id}>
-              <button type="button" className="zone-button" aria-pressed={selectedZone === id} onClick={() => { selectZone(id); }}>
+              <button
+                type="button"
+                className="zone-button"
+                aria-pressed={selectedZone === id}
+                onClick={() => {
+                  selectZone(id);
+                  if (id === 'board') openBoard();
+                }}
+              >
                 {zoneById(id).label}
               </button>
               <span className="two-d-muted">{ZONE_NOTES[id]}</span>
@@ -97,28 +107,31 @@ export function TwoDView() {
 
       <section className="shell-region" aria-labelledby="fallback-board-heading">
         <h2 id="fallback-board-heading">Board</h2>
-        <p className="two-d-muted">Read-only until the board stories (E06).</p>
-        {TASK_COLUMNS.map((column) => {
-          const tasks = snapshot.tasks.filter((t) => t.column === column);
-          return (
-            <div key={column} className={selectedZone === 'board' ? 'two-d-column is-highlighted' : 'two-d-column'}>
-              <h3>
-                {COLUMN_LABELS[column]} <span className="two-d-muted">({tasks.length})</span>
-              </h3>
-              {tasks.length === 0 ? (
-                <p className="two-d-muted">No tasks.</p>
-              ) : (
-                <ul className="two-d-list">
-                  {tasks.map((t) => (
-                    <li key={t.id} className={selectedTaskId === t.id ? 'is-selected' : undefined}>
-                      <strong>{t.issueKey}</strong> {t.title} <span className="two-d-muted">· {agentName(t.assigneeId)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
+        <p className="two-d-muted">The same cards as the whiteboard.</p>
+        <button type="button" className="btn" aria-pressed={openId === BOARD_TARGET.id} onClick={openBoard}>
+          Open board
+        </button>
+        {board.columns.map((col) => (
+          <div key={col.column} className={selectedZone === 'board' ? 'two-d-column is-highlighted' : 'two-d-column'}>
+            <h3>
+              {col.label} <span className="two-d-muted">({col.cards.length})</span>
+            </h3>
+            {col.cards.length === 0 ? (
+              <p className="two-d-muted">No tasks in {col.label}.</p>
+            ) : (
+              <ul className="two-d-list">
+                {col.cards.map((card) => (
+                  <li key={card.taskId} className={selectedTaskId === card.taskId ? 'is-selected' : undefined}>
+                    <strong>{card.issueKey}</strong> {card.title}{' '}
+                    <span className="two-d-muted">
+                      · {card.assignee} · {PRIORITY_LABELS[card.priority]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
       </section>
     </div>
   );

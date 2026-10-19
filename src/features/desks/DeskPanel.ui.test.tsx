@@ -97,14 +97,16 @@ describe('DeskPanel', () => {
     expect(screen.getByText('Resume needs a paused or interrupted session; this one is running.')).toBeVisible();
   });
 
-  it('Inspect task selects the task and shows its title and column', async () => {
+  it('Inspect task selects the task and opens the board on it', async () => {
     const user = userEvent.setup();
     renderWithFixture();
     openAda();
 
     await user.click(screen.getByRole('button', { name: 'Inspect task' }));
     expect(navigationStore.getState().selectedTaskId).toBe('task-login');
-    expect(screen.getByRole('status')).toHaveTextContent('Selected for the board: FV-1 Add login screen · In Review');
+    const board = screen.getByRole('dialog', { name: 'Kanban board' });
+    expect(within(board).getByRole('button', { name: /FV-1/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(board).getByRole('region', { name: /FV-1 · Add login screen/ })).toHaveTextContent('In Review');
   });
 
   it('closes with the close button and with Escape', async () => {

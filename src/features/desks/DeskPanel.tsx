@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { COLUMN_LABELS } from '../../domain/index.ts';
 import { useInteraction } from '../../store/interaction.ts';
 import { useNavigation } from '../../store/navigation.ts';
 import { useWorkflow } from '../../store/context.ts';
 import { runtimeStyle } from '../../ui/runtimes.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
 import { TerminalView } from '../terminal/TerminalView.tsx';
+import { openBoard } from '../board/openBoard.ts';
 import { clockTime, deskDetails, deskId, sessionControls, timeAgo, type SessionCommand } from './deskDetails.ts';
 
 
@@ -21,7 +21,6 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
   const close = useInteraction((s) => s.close);
   const terminal = useInteraction((s) => s.terminal);
   const showTerminal = useInteraction((s) => s.showTerminal);
-  const selectedTaskId = useNavigation((s) => s.selectedTaskId);
   const selectTask = useNavigation((s) => s.selectTask);
   const pauseSession = useWorkflow((s) => s.pauseSession);
   const resumeSession = useWorkflow((s) => s.resumeSession);
@@ -127,7 +126,9 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
               type="button"
               disabled={!details.task}
               onClick={() => {
-                if (details.task) selectTask(details.task.id);
+                if (!details.task) return;
+                selectTask(details.task.id);
+                openBoard();
               }}
             >
               Inspect task
@@ -169,12 +170,6 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
             </p>
           )}
 
-          {selectedTaskId !== null && details.task?.id === selectedTaskId && (
-            <p className="desk-inspected" role="status">
-              Selected for the board: <strong>{details.task.issueKey}</strong> {details.task.title} ·{' '}
-              {COLUMN_LABELS[details.task.column]}
-            </p>
-          )}
 
           <h3 className="desk-subheading">Recent events</h3>
           {details.recentEvents.length === 0 ? (

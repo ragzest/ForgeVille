@@ -15,7 +15,8 @@ import { PLAYER_SPAWN, VACANT_FLOOR_LANDMARKS, deskAssignments } from './layout.
 import { Lights, Outside } from './Outside.tsx';
 import { EYE_HEIGHT } from './player/movement.ts';
 import { PlayerRig } from './player/PlayerRig.tsx';
-import { boardColumns, qaDisplay, statusTiles } from './screens/displays.ts';
+import { floorBoard } from './screens/board.ts';
+import { qaDisplay, statusTiles } from './screens/displays.ts';
 import { screenModel } from './screens/screenModel.ts';
 import { RoomShell } from './Shell.tsx';
 import { FloorSceneProvider, OutlineSizer } from './Solid.tsx';
@@ -49,21 +50,20 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
           name: team.find((a) => a.id === desk.agentId)?.name ?? desk.agentId,
           screen: screenModel(snapshot, desk.agentId),
         }));
-    const columns = vacant ? boardColumns({ ...snapshot, tasks: [] }) : boardColumns(snapshot);
+    const board = floorBoard(snapshot, floorId);
     const qa = vacant ? { heading: null, rows: [] } : qaDisplay(snapshot);
     const tiles = vacant ? [] : statusTiles(snapshot);
-    const heading = project ? `${project.name} · task board` : `${floor.theme.name} · task board`;
     const statusTitle = project ? `${project.name} · status` : `${floorTitle(floor)} · vacant`;
     return {
       desks,
       characters: vacant ? [] : characterModels(snapshot, reducedMotion, team),
       targets: vacant ? interactionTargets([], VACANT_FLOOR_LANDMARKS) : interactionTargets(team),
       plaque: project?.name ?? `${floor.theme.name} · vacant`,
-      board: { columns, heading, key: `${floor.id}|${JSON.stringify(columns)}` },
+      board: { columns: board.columns, heading: board.heading, key: `${floor.id}|${JSON.stringify(board.columns)}` },
       qa: { display: qa, key: `${floor.id}|${JSON.stringify(qa)}` },
       status: { title: statusTitle, tiles, key: `${floor.id}|${statusTitle}|${JSON.stringify(tiles)}` },
     };
-  }, [snapshot, project, vacant, floor, reducedMotion]);
+  }, [snapshot, project, vacant, floor, floorId, reducedMotion]);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
