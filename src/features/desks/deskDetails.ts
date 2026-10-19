@@ -70,3 +70,31 @@ export function timeAgo(at: Timestamp, now: Timestamp): string {
 export function clockTime(at: Timestamp): string {
   return new Date(at).toISOString().slice(11, 16);
 }
+
+export type SessionCommand = 'pause' | 'resume' | 'interrupt';
+
+export interface SessionControl {
+  readonly command: SessionCommand;
+  readonly label: string;
+  readonly enabled: boolean;
+  /** Why the button is unavailable. Empty when enabled. */
+  readonly reason: string;
+}
+
+const CONTROL_RULES: readonly { command: SessionCommand; label: string; from: readonly AgentSession['state'][]; needs: string }[] = [
+  { command: 'pause', label: 'Pause', from: ['running'], needs: 'a running session' },
+  { command: 'resume', label: 'Resume', from: ['paused', 'interrupted'], needs: 'a paused or interrupted session' },
+  { command: 'interrupt', label: 'Interrupt', from: ['running', 'paused'], needs: 'a running or paused session' },
+];
+
+/**
+ * Which session buttons are available for the current session state. Mirrors
+ * the domain rules so buttons read right; the port still has the final say.
+ */
+export function sessionControls(session: AgentSession | null): readonly SessionControl[] {
+  return CONTROL_RULES.map(({ command, label, from, needs }) => {
+    if (!session) return { command, label, enabled: false, reason: `${label} needs a simulated session; there is none.` };
+    const enabled = from.includes(session.state);
+    return { command, label, enabled, reason: enabled ? '' : `${label} needs ${needs}; this one is ${session.state}.` };
+  });
+}

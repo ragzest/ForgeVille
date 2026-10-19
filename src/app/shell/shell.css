@@ -1020,3 +1020,27 @@ kbd {
     animation: none;
   }
 }
+
+/* Session command reasons and results in the desk panel. */
+.desk-reasons {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.desk-reasons li {
+  margin: 0;
+}
+
+.desk-feedback {
+  margin: 0.6rem 0 0;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  border: var(--fv-border) solid var(--fv-ink);
+  background: var(--fv-success-soft);
+  font-size: 0.88rem;
+}
+
+.desk-feedback.is-refused {
+  background: var(--fv-danger-soft);
+}

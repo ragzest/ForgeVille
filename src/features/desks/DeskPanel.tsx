@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { COLUMN_LABELS } from '../../domain/index.ts';
 import { useInteraction } from '../../store/interaction.ts';
 import { useNavigation } from '../../store/navigation.ts';
@@ -5,9 +6,8 @@ import { useWorkflow } from '../../store/context.ts';
 import { runtimeStyle } from '../../ui/runtimes.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
 import { TerminalView } from '../terminal/TerminalView.tsx';
-import { clockTime, deskDetails, deskId, timeAgo } from './deskDetails.ts';
+import { clockTime, deskDetails, deskId, sessionControls, timeAgo, type SessionCommand } from './deskDetails.ts';
 
-const SESSION_REASON = 'Pause, resume, and interrupt arrive with S05-03.';
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const count = new Intl.NumberFormat('en-US');
@@ -23,8 +23,23 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
   const showTerminal = useInteraction((s) => s.showTerminal);
   const selectedTaskId = useNavigation((s) => s.selectedTaskId);
   const selectTask = useNavigation((s) => s.selectTask);
+  const pauseSession = useWorkflow((s) => s.pauseSession);
+  const resumeSession = useWorkflow((s) => s.resumeSession);
+  const interruptSession = useWorkflow((s) => s.interruptSession);
+  const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
   const details = deskDetails(snapshot, agentId);
   const now = snapshot.clock.now;
+
+  // Every session command goes through the workflow port; the panel only shows what comes back.
+  const run = (command: SessionCommand, sessionId: string) => {
+    const send = { pause: pauseSession, resume: resumeSession, interrupt: interruptSession }[command];
+    const result = send(sessionId);
+    setFeedback(
+      result.ok
+        ? { ok: true, text: result.snapshot.events.at(-1)?.message ?? 'Done.' }
+        : { ok: false, text: result.reason },
+    );
+  };
 
   return (
     <section className={terminal ? 'panel desk-panel is-terminal' : 'panel desk-panel'} role="dialog" aria-modal="false" aria-labelledby="interaction-panel-title">
@@ -125,19 +140,34 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
             >
               Open terminal
             </button>
-            <button type="button" disabled aria-describedby="desk-session-reason">
-              Pause
-            </button>
-            <button type="button" disabled aria-describedby="desk-session-reason">
-              Resume
-            </button>
-            <button type="button" disabled aria-describedby="desk-session-reason">
-              Interrupt
-            </button>
+            {sessionControls(details.session).map((control) => (
+              <button
+                key={control.command}
+                type="button"
+                disabled={!control.enabled}
+                aria-describedby={control.enabled ? undefined : `desk-${control.command}-reason`}
+                onClick={() => {
+                  if (details.session) run(control.command, details.session.id);
+                }}
+              >
+                {control.label}
+              </button>
+            ))}
           </div>
-          <p className="panel-note" id="desk-session-reason">
-            {SESSION_REASON}
-          </p>
+          <ul className="desk-reasons">
+            {sessionControls(details.session)
+              .filter((control) => !control.enabled)
+              .map((control) => (
+                <li key={control.command} id={`desk-${control.command}-reason`} className="panel-note">
+                  {control.reason}
+                </li>
+              ))}
+          </ul>
+          {feedback && (
+            <p className={feedback.ok ? 'desk-feedback' : 'desk-feedback is-refused'} role={feedback.ok ? 'status' : 'alert'}>
+              {feedback.ok ? feedback.text : `Not done: ${feedback.text}`}
+            </p>
+          )}
 
           {selectedTaskId !== null && details.task?.id === selectedTaskId && (
             <p className="desk-inspected" role="status">
@@ -150,7 +180,7 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
           {details.recentEvents.length === 0 ? (
             <p className="panel-note">No events for {details.agent.name} yet.</p>
           ) : (
-            <ol className="desk-events">
+            <ol className="desk-events" aria-label="Recent events">
               {details.recentEvents.map((e) => (
                 <li key={e.id}>
                   <time dateTime={e.timestamp}>{clockTime(e.timestamp)}</time> {e.message}

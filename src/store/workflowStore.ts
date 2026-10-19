@@ -9,13 +9,13 @@ export interface WorkflowState {
   /** Outcome of the most recent command, for showing refusal reasons. */
   readonly lastResult: CommandResult | null;
 
-  loadScenario(id: ScenarioId): void;
-  moveTask(taskId: string, to: TaskColumn): CommandResult;
-  pauseSession(sessionId: string): CommandResult;
-  resumeSession(sessionId: string): CommandResult;
-  interruptSession(sessionId: string): CommandResult;
-  requestChanges(pullRequestId: string, findingId?: string): CommandResult;
-  mergePullRequest(pullRequestId: string): CommandResult;
+  readonly loadScenario: (id: ScenarioId) => void;
+  readonly moveTask: (taskId: string, to: TaskColumn) => CommandResult;
+  readonly pauseSession: (sessionId: string) => CommandResult;
+  readonly resumeSession: (sessionId: string) => CommandResult;
+  readonly interruptSession: (sessionId: string) => CommandResult;
+  readonly requestChanges: (pullRequestId: string, findingId?: string) => CommandResult;
+  readonly mergePullRequest: (pullRequestId: string) => CommandResult;
 }
 
 export type WorkflowStore = StoreApi<WorkflowState>;

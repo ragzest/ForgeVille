@@ -1,6 +1,6 @@
 # S05-03 — Pause, resume, interrupt
 
-Status: todo
+Status: done
 Epic: [E05](../epics/E05-desks.md)
 Depends on: S05-01, S02-05
 
