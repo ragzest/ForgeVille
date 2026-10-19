@@ -3,10 +3,11 @@ import { BoardPanel } from '../board/BoardPanel.tsx';
 import { PullRequestPanel } from '../qa/PullRequestPanel.tsx';
 import { ElevatorPanel } from '../building/ElevatorPanel.tsx';
 import { DeskPanel } from '../desks/DeskPanel.tsx';
+import { MissionControlPanel } from '../mission-control/MissionControlPanel.tsx';
+import { STATUS_TARGET } from '../mission-control/missionControl.ts';
 import { agentIdFromDesk } from '../desks/deskDetails.ts';
 
 const COMING_IN: Readonly<Record<string, string>> = {
-  'status-display': 'Project metrics arrive with mission control (S08-01).',
   reception: 'Project overview arrives with the vertical slice (E09).',
 };
 
@@ -20,6 +21,7 @@ export function InteractionPanel() {
   if (open.id === 'elevator') return <ElevatorPanel title={open.label} />;
   if (open.id === 'board') return <BoardPanel title={open.label} />;
   if (open.id === 'qa-screen') return <PullRequestPanel title={open.label} />;
+  if (open.id === STATUS_TARGET.id) return <MissionControlPanel />;
   const kind = open.id;
 
   return (

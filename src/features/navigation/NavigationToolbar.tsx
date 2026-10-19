@@ -1,6 +1,7 @@
 import { interactionStore } from '../../store/interaction.ts';
 import { openBoard } from '../board/openBoard.ts';
 import { openQa } from '../qa/openQa.ts';
+import { openMissionControl } from '../mission-control/missionControl.ts';
 import { useNavigation, type OfficeView } from '../../store/navigation.ts';
 import { FLOORS, floorTitle } from '../../world/building.ts';
 import { TRAVEL_ZONES, zoneById } from '../../world/layout.ts';
@@ -54,6 +55,7 @@ export function NavigationToolbar({ webgl }: Props) {
                 // In 2D, choosing the board opens it, like walking up to the whiteboard.
                 if (id === 'board') openBoard();
                 if (id === 'qa') openQa();
+                if (id === 'status') openMissionControl();
               }
             }}
           >
