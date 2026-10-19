@@ -1,6 +1,6 @@
 # E09 — Cohesive prototype
 
-Status: in-progress
+Status: done
 
 ## Outcome
 
