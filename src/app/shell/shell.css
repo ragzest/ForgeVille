@@ -354,3 +354,123 @@ body {
 .presence--blocked { background: var(--fv-danger); color: var(--fv-ivory); }
 .presence--awaiting_review { background: var(--fv-amber); color: var(--fv-ivory); }
 .presence--reviewing { background: var(--fv-review); color: var(--fv-ivory); }
+
+.two-d-list li.is-selected {
+  background: color-mix(in srgb, var(--fv-mint) 45%, transparent);
+  border-radius: 6px;
+  padding: 0.1rem 0.3rem;
+}
+
+/* Desk panel: identity, facts, actions, recent events. Fits a 390px phone. */
+.desk-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.desk-identity .presence {
+  margin-left: 0;
+}
+
+.desk-name {
+  margin: 0 0 0.25rem;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--fv-forest);
+  color: var(--fv-ivory);
+  font: 700 1.2rem/1 var(--fv-font);
+}
+
+.desk-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 0.75rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.desk-facts dt {
+  font-weight: 600;
+}
+
+.desk-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mock-label {
+  display: inline-block;
+  padding: 0 0.4rem;
+  border-radius: 4px;
+  background: var(--fv-amber);
+  color: var(--fv-ivory);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.desk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.desk-actions button {
+  font: 500 0.85rem/1.2 var(--fv-font);
+  min-height: 2.25rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--fv-forest);
+  background: var(--fv-forest);
+  color: var(--fv-ivory);
+  cursor: pointer;
+}
+
+.desk-actions button:disabled {
+  background: #fff;
+  color: color-mix(in srgb, var(--fv-charcoal) 60%, transparent);
+  border-color: var(--fv-grey);
+  cursor: not-allowed;
+}
+
+.desk-actions button:focus-visible {
+  outline: 3px solid var(--fv-emerald);
+  outline-offset: 2px;
+}
+
+.desk-actions + .panel-note,
+.desk-actions + .panel-note + .panel-note {
+  margin: 0.35rem 0 0;
+}
+
+.desk-inspected {
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fv-mint) 45%, transparent);
+  font-size: 0.9rem;
+}
+
+.desk-subheading {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.desk-events {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.desk-events time {
+  font-weight: 600;
+}

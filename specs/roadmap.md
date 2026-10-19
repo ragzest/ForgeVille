@@ -25,8 +25,8 @@ Status key: `todo` | `in-progress` | `done`
 | 4.1 | [S04-01](stories/S04-01-player-controls.md) | Walk, look, run, pointer lock | done |
 | 4.2 | [S04-02](stories/S04-02-interact.md) | Proximity interaction and hints | done |
 | 4.3 | [S04-03](stories/S04-03-overview-and-2d.md) | Overview, zone travel, and 2D alternative | done |
-| 5 | [E05](epics/E05-desks.md) | Agent desks | todo |
-| 5.1 | [S05-01](stories/S05-01-agent-panel.md) | Desk detail panel | todo |
+| 5 | [E05](epics/E05-desks.md) | Agent desks | in-progress |
+| 5.1 | [S05-01](stories/S05-01-agent-panel.md) | Desk detail panel | done |
 | 5.2 | [S05-02](stories/S05-02-terminal.md) | Simulated terminal | todo |
 | 5.3 | [S05-03](stories/S05-03-session-commands.md) | Pause, resume, interrupt | todo |
 | 6 | [E06](epics/E06-board.md) | Kanban whiteboard | todo |

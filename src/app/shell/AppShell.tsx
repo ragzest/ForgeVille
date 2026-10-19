@@ -64,9 +64,9 @@ export function AppShell({ environment }: AppShellProps) {
             />
           )}
         </main>
-        {/* Panels mount here in later stories. Empty, with nothing focusable. */}
+        {/* Object panels. Empty, with nothing focusable, until one opens. */}
         <div id="overlay-root" className="shell-overlays" data-testid="overlay-root">
-          {state.status === 'ready' && officeMounted && <InteractionPanel />}
+          {((state.status === 'ready' && officeMounted) || state.status === 'no-webgl') && <InteractionPanel />}
         </div>
       </div>
     </PreferencesContext.Provider>
