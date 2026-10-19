@@ -2,48 +2,162 @@
 
 A charming, cartoon-style 3D office where AI coding agents work together to build software.
 
-This repository currently holds the product brief, architecture boundaries, and an incremental backlog. The playable prototype is not implemented yet. Build it epic by epic from `specs/roadmap.md`. Do not skip ahead into real coding-agent runtimes or GitHub writes.
+You walk a cel-shaded office building, stop by agent desks to read their terminals, move cards on the Kanban whiteboard, review pull requests in the QA lab, and check mission control. Everything you see comes from one mock workflow, so the 3D office, the 2D view, and the panels always agree.
 
-## What this milestone is
+![The Workshop floor with the Lantern team at their desks](docs/screenshots/floors/1-workshop.png)
 
-A local, simulated software company you can walk through:
+## Milestone limits
 
-- a small building of themed floors (one occupied by the demo team)
-- mock agents at desks
-- a Kanban board, QA lab, and pull-request review area
-- mission control derived from the same mock state
+This is **milestone 0: a simulated prototype**. It runs entirely in your browser.
 
-Real Claude Code, Codex, Pi, OpenCode, and GitHub operations are out of scope until a later milestone.
+- No real coding agents run. Claude Code, Codex, Pi, and OpenCode appear only as labels.
+- No GitHub reads or writes. Pull requests, checks, and merges are mock data.
+- No backend, database, or paid external service. State lives in memory and resets when you reload.
+- Every simulated surface carries a visible **Simulated** label.
 
-## Start here
+See [Limitations](#limitations) for the full list.
 
-1. Read `specs/product-brief.md`.
-2. Read `specs/architecture.md` before adding code.
-3. Pick the next unchecked story in `specs/roadmap.md`.
-4. Implement only that story, with its tests, then update the story status.
+## Setup
 
-Suggested first slice: [E01 — Foundation](specs/epics/E01-foundation.md), story [S01-01](specs/stories/S01-01-scaffold-app.md).
+You need Node.js 20.19 or newer.
 
-## Repository map
-
-```text
-specs/
-  product-brief.md      Product vision and definition of done
-  architecture.md       Modules, state ownership, and future ports
-  design.md             Visual and interaction constraints
-  roadmap.md            Build order
-  epics/                Outcome-sized increments
-  stories/              Implementable slices with acceptance criteria
+```sh
+npm install
+npm run dev
 ```
 
-## Constraints
+Open the URL Vite prints (normally http://localhost:5173).
 
-- One source of truth for tasks, agents, pull requests, and events.
-- 3D presentation must not decide whether work succeeded.
-- Simulated UI must be labelled as simulated.
-- No real processes, network calls to agent vendors, or GitHub mutations in this milestone.
-- Merge actions follow the mock policy. A button click alone is not enough.
+### Commands
 
-## Later milestone
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server with hot reload |
+| `npm run build` | Type-check and build a production bundle into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | Run TypeScript in strict mode without emitting files |
+| `npm run lint` | Run ESLint with zero warnings allowed |
+| `npm test` | Run the Vitest unit and component tests once |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run test:e2e` | Run the Playwright end-to-end tests (starts the dev server for you) |
 
-Connect one real coding-agent runtime to an isolated local workspace. See `specs/epics/E11-future-boundary.md`. Do not start that work while the prototype stories are open.
+Playwright needs a Chromium build the first time:
+
+```sh
+npx playwright install chromium
+npm run test:e2e
+```
+
+[`e2e/README.md`](e2e/README.md) explains how to reuse a Chromium that is already installed and what the walkthrough test covers.
+
+### URL options
+
+| Query | Effect |
+| --- | --- |
+| `?scenario=<id>` | Start on a demo scenario: `feature-in-progress` (default), `review-and-qa-pass`, `qa-failure`, `agent-blocked`, `successful-merge`. An unknown id falls back to the default and says so. |
+| `?webgl=off` | Skip the 3D office and use the 2D view, as if the browser had no WebGL |
+
+## Controls
+
+| Input | Action |
+| --- | --- |
+| Click the office | Lock the mouse and look around |
+| Mouse (while locked) | Look |
+| <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or arrow keys | Walk |
+| <kbd>Shift</kbd> (held) | Run |
+| <kbd>E</kbd> | Open the desk, board, screen, or elevator you are facing (a hint names it) |
+| Click an object (mouse unlocked) | Open that desk, board, screen, or elevator |
+| <kbd>Esc</kbd> | First press releases the mouse; the next press closes the open panel |
+| **Walk** / **Overview** / **2D view** buttons | Switch between first-person, a top-down overview, and the 2D alternative |
+| Zone buttons (Reception, Developer desks, QA lab, Kanban board, Project status, Meeting area) | Travel to that zone in 3D, or select it in the 2D view |
+| Floor picker (**1 Workshop** to **4 Ember Forge**) | Ride straight to that floor |
+| Elevator (walk up to it and press <kbd>E</kbd>, or click it) | Lists every floor with its theme and occupant, and takes you there |
+| **Scenario** menu | Load one of the five demo scenarios across every view |
+
+Keys are ignored while focus is in a text field or a panel that captures keys, such as the terminal. Movement keys follow physical position, so AZERTY layouts get the same layout. With reduced motion enabled in your OS, looping animation stops and state changes are instant.
+
+## Building
+
+The office is a building of four floors. They share one floor plan and differ by theme. Projects move in from the ground floor up, one per floor.
+
+| Floor | Theme | Look | Today |
+| --- | --- | --- | --- |
+| 1 | Workshop | Honey oak and morning sun | The Lantern team works here |
+| 2 | Greenhouse | Birch, sage, and far too many plants | Vacant |
+| 3 | Night Studio | Walnut, indigo, and warm desk lamps | Vacant |
+| 4 | Ember Forge | Copper, concrete, and a golden-hour sky | Vacant |
+
+Floors 2 to 4 are vacant for now. You can ride there and walk around; the furniture is in place but nobody works there, and only the elevator is interactive.
+
+| | |
+| --- | --- |
+| ![Floor 1, Workshop](docs/screenshots/floors/1-workshop.png) | ![Floor 2, Greenhouse](docs/screenshots/floors/2-greenhouse.png) |
+| Floor 1 · Workshop | Floor 2 · Greenhouse |
+| ![Floor 3, Night Studio](docs/screenshots/floors/3-night-studio.png) | ![Floor 4, Ember Forge](docs/screenshots/floors/4-ember-forge.png) |
+| Floor 3 · Night Studio | Floor 4 · Ember Forge |
+
+## Demo scenarios
+
+Each scenario is deterministic data plus a fixed event log, not random timers.
+
+| Scenario | What happens |
+| --- | --- |
+| Feature in progress | Ada, Bruno, and Chen are mid-task on Lantern. Dara has work ready. |
+| Review and QA pass | Fern approved pull request #2 and every required check passed. It can be merged. |
+| QA failure | The browser check failed on pull request #2, so LN-2 went back to Ada. |
+| Agent blocked | Chen is blocked on LN-4 until the LN-3 sync API lands, and asked for help. |
+| Successful merge | Pull request #2 passed the merge policy and merged. LN-2 is done. |
+
+## Architecture
+
+[`specs/architecture.md`](specs/architecture.md) is the binding reference. In short:
+
+- **The store is the single source of truth.** `src/store/` holds the workflow snapshot (projects, agents, tasks, sessions, pull requests, test runs, reviews, events). The 3D office, the 2D view, and every panel read from it. Nothing in the scene owns workflow state.
+- **Rules live in the domain.** `src/domain/` defines task transitions, agent presence, the merge policy, and mission-control metrics as pure functions. A merge button calls the policy; it cannot bypass it.
+- **The mock sits behind a port.** `src/services/ports.ts` defines `WorkflowPort`; `src/services/mock/` implements it with the five scenarios. A guard test fails the build if the mock reaches for the network or processes.
+- **Presentation is separate.** `src/world/` draws the building with React Three Fiber; `src/features/` holds the panels; `src/ui/` holds tokens and floor themes. Small presentation stores track the view, floor, and open panel, never workflow data.
+
+```text
+src/
+  app/        composition, providers, scenario bootstrap
+  domain/     types, transitions, policies, metrics
+  services/   WorkflowPort, the mock service, the effect guard
+  store/      workflow store plus navigation and interaction stores
+  world/      canvas, building, characters, in-world screens
+  features/   desks, terminal, board, QA and pull requests, mission control, navigation
+  ui/         tokens, floor themes, fonts
+specs/        product brief, architecture, design, roadmap, epics, stories
+e2e/          Playwright tests
+```
+
+## Limitations
+
+Everything that looks like engineering work is simulated:
+
+- **Agents** are scripted characters bound to mock sessions. No agent runtime is launched.
+- **Terminals** replay fixed output. Nothing is typed into a real shell.
+- **Checks** (unit tests, build, browser tests) are mock results in the scenario data.
+- **Screenshots** in the pull-request panel are labelled placeholders, not captures.
+- **Usage** (tokens and cost on each desk) is a mock estimate.
+- **Merges** change mock state only, and only when the mock policy allows them. No branch is merged anywhere.
+
+The app makes no requests to GitHub or agent vendors, and the end-to-end walkthrough fails if any request leaves the dev server. Not supported in this milestone: deploying the prototype, saving state between reloads, and more than one project.
+
+## Roadmap
+
+[`specs/roadmap.md`](specs/roadmap.md) is the build order. Milestone 0 (epics E01 to E09) is done. Milestone 0.5 ([E10](specs/epics/E10-living-building.md), the living building) adds multi-project floors, time of day, and quality tiers on top of it without changing workflow rules.
+
+### Recommended next milestone
+
+Connect **one real coding-agent runtime to an isolated local workspace**, keeping the office on `WorkflowPort` with a new adapter in place of the mock. That work is only specified as a boundary in [E11](specs/epics/E11-future-boundary.md) and is **not implemented**. It stays blocked until its entry criteria are met.
+
+## Contributing
+
+1. Read [`specs/product-brief.md`](specs/product-brief.md) and [`specs/architecture.md`](specs/architecture.md).
+2. Pick the next `todo` story in [`specs/roadmap.md`](specs/roadmap.md) and implement only that story, with its tests.
+3. Before pushing, run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run test:e2e`.
+4. Set the story's status to `done` in the story file and the roadmap.
+
+## License
+
+[MIT](LICENSE)

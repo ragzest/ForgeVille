@@ -1,6 +1,6 @@
 # S09-04 — Operator README
 
-Status: todo
+Status: done
 Epic: [E09](../epics/E09-vertical-slice.md)
 Depends on: S09-02, S09-03
 
