@@ -62,7 +62,9 @@ describe('DeskPanel', () => {
     expect(panel).toHaveTextContent('Simulated, running');
     expect(within(panel).getByText('Mock estimate')).toBeInTheDocument();
     expect(panel).toHaveTextContent('12,000 tokens · $0.40');
-    expect(within(panel).getByRole('listitem')).toHaveTextContent('Ada opened pull request #1 for FV-1.');
+    expect(within(within(panel).getByRole('list', { name: 'Recent events' })).getByRole('listitem')).toHaveTextContent(
+      'Ada opened pull request #1 for FV-1.',
+    );
   });
 
   it('hides usage entirely when the agent has no mock estimate', () => {
@@ -78,20 +80,21 @@ describe('DeskPanel', () => {
     expect(screen.getByRole('button', { name: 'Inspect task' })).toBeDisabled();
   });
 
-  it('shows every action, with a visible reason on the disabled session commands', () => {
+  it('shows every action, with a visible reason on the unavailable session commands', () => {
     renderWithFixture();
     openAda();
     const actions = within(screen.getByRole('group', { name: 'Desk actions' })).getAllByRole('button');
     expect(actions.map((b) => b.textContent)).toEqual(['Inspect task', 'Open terminal', 'Pause', 'Resume', 'Interrupt']);
 
     expect(screen.getByRole('button', { name: 'Open terminal' })).toBeEnabled();
-    for (const name of ['Pause', 'Resume', 'Interrupt']) {
-      expect(screen.getByRole('button', { name })).toBeDisabled();
-      expect(screen.getByRole('button', { name })).toHaveAccessibleDescription(
-        'Pause, resume, and interrupt arrive with S05-03.',
-      );
-    }
-    expect(screen.getByText('Pause, resume, and interrupt arrive with S05-03.')).toBeVisible();
+    // Ada's fixture session is running: pause and interrupt are available, resume is not.
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Interrupt' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Resume' })).toHaveAccessibleDescription(
+      'Resume needs a paused or interrupted session; this one is running.',
+    );
+    expect(screen.getByText('Resume needs a paused or interrupted session; this one is running.')).toBeVisible();
   });
 
   it('Inspect task selects the task and shows its title and column', async () => {
