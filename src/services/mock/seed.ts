@@ -16,7 +16,10 @@ export const SEED_START: Timestamp = '2026-03-02T08:30:00.000Z';
 
 export const PROJECT_ID = 'project-lantern';
 
-/** Six to eight agents with distinct names, roles, and labels. Labels are display text only. */
+/** The second team, on floor 2. Small on purpose: it shows the building is shared, not a second workflow. */
+export const SPROUT_PROJECT_ID = 'project-sprout';
+
+/** Lantern's seven agents, with distinct names, roles, and labels. Labels are display text only. */
 export const AGENTS: readonly Agent[] = [
   agent('agent-ada', 'Ada', 'Frontend developer', 'fox', 'Claude Code', 'Opus', 48_200, 1.92),
   agent('agent-bruno', 'Bruno', 'Backend developer', 'bear', 'Codex', 'GPT-5', 39_800, 1.31),
@@ -25,6 +28,14 @@ export const AGENTS: readonly Agent[] = [
   agent('agent-eli', 'Eli', 'QA engineer', 'owl', 'Claude Code', 'Sonnet', 21_700, 0.52),
   agent('agent-fern', 'Fern', 'Code reviewer', 'heron', 'Codex', 'GPT-5', 18_900, 0.61),
   agent('agent-gus', 'Gus', 'Tech lead', 'badger', 'Claude Code', 'Opus', 9_400, 0.37),
+];
+
+/** Sprout's four agents. Names never repeat Lantern's, so a name alone says which floor someone is on. */
+export const SPROUT_AGENTS: readonly Agent[] = [
+  agent('agent-hana', 'Hana', 'Frontend developer', 'hare', 'Claude Code', 'Sonnet', 15_300, 0.41, SPROUT_PROJECT_ID),
+  agent('agent-ivo', 'Ivo', 'Backend developer', 'bear', 'OpenCode', 'Qwen Coder', 22_800, 0.36, SPROUT_PROJECT_ID),
+  agent('agent-juno', 'Juno', 'QA engineer', 'owl', 'Pi', 'Gemini', 6_200, 0.14, SPROUT_PROJECT_ID),
+  agent('agent-kit', 'Kit', 'Tech lead', 'otter', 'Codex', 'GPT-5', 8_700, 0.29, SPROUT_PROJECT_ID),
 ];
 
 function agent(
@@ -36,10 +47,11 @@ function agent(
   modelLabel: string,
   tokens: number,
   costUsd: number,
+  projectId: string = PROJECT_ID,
 ): Agent {
   return {
     id,
-    projectId: PROJECT_ID,
+    projectId,
     name,
     role,
     avatar,
@@ -57,11 +69,11 @@ export function task(
   column: Task['column'],
   assigneeId: string | null,
   priority: Task['priority'],
-  extra: Partial<Pick<Task, 'description' | 'dependsOn' | 'branch' | 'pullRequestId'>> = {},
+  extra: Partial<Pick<Task, 'projectId' | 'description' | 'dependsOn' | 'branch' | 'pullRequestId'>> = {},
 ): Task {
   return {
     id,
-    projectId: PROJECT_ID,
+    projectId: extra.projectId ?? PROJECT_ID,
     issueKey,
     title,
     description: extra.description ?? '',
@@ -108,7 +120,7 @@ export function testRun(
   return { id, pullRequestId, check, status, startedAt, finishedAt, summary, failureReason: null };
 }
 
-/** Appends an event after moving the clock, so the log reads as a timeline. */
+/** Appends an event after moving the clock, so the log reads as a timeline. Lantern's unless `links.projectId` says otherwise. */
 export function log(
   snapshot: WorkflowSnapshot,
   minutes: number,
@@ -150,8 +162,13 @@ export function seedCompany(): WorkflowSnapshot {
         name: 'Lantern',
         description: 'A cozy reading-list app the ForgeVille team is building. Everything here is simulated.',
       },
+      {
+        id: SPROUT_PROJECT_ID,
+        name: 'Sprout',
+        description: 'A plant-care app that reminds you when to water. The second team in the building; also simulated.',
+      },
     ],
-    agents: AGENTS,
+    agents: [...AGENTS, ...SPROUT_AGENTS],
     tasks: [
       task('task-ln-1', 'LN-1', 'Reading list data model', 'merged', 'agent-bruno', 'high', {
         description: 'Tables and types for saved articles, so every other reading-list task has somewhere to store data.',
@@ -182,6 +199,7 @@ export function seedCompany(): WorkflowSnapshot {
       task('task-ln-7', 'LN-7', 'Dark mode', 'backlog', null, 'low', {
         description: 'A dark theme for the whole app, following the system setting.',
       }),
+      ...sproutTasks(),
     ],
     sessions: [
       session('session-ada', 'agent-ada', 'task-ln-2', t('08:40'), [
@@ -196,6 +214,14 @@ export function seedCompany(): WorkflowSnapshot {
       session('session-chen', 'agent-chen', 'task-ln-4', t('08:50'), [
         [t('08:52'), 'stdout', 'Reading the LN-3 sync API draft'],
         [t('08:59'), 'stdout', 'Sketching IndexedDB schema for cached articles'],
+      ]),
+      session('session-ivo', 'agent-ivo', 'task-sp-1', t('08:40'), [
+        [t('08:44'), 'stdout', 'Modelling watering intervals per plant'],
+        [t('08:57'), 'stdout', '$ npm test -- schedule (simulated) — 6 passed'],
+      ]),
+      session('session-hana', 'agent-hana', 'task-sp-2', t('08:45'), [
+        [t('08:48'), 'stdout', 'Editing src/components/PlantCard.tsx'],
+        [t('08:56'), 'stdout', 'Adding a droplet badge for plants due today'],
       ]),
     ],
     pullRequests: [MERGED_PR],
@@ -227,10 +253,22 @@ export function seedCompany(): WorkflowSnapshot {
     taskId: 'task-ln-2',
     sessionId: 'session-ada',
   });
+  s = log(s, 0, 'session_started', 'Ivo started a simulated session on SP-1, upstairs on the Sprout floor.', {
+    projectId: SPROUT_PROJECT_ID,
+    agentId: 'agent-ivo',
+    taskId: 'task-sp-1',
+    sessionId: 'session-ivo',
+  });
   s = log(s, 5, 'session_started', 'Bruno started a simulated session on LN-3.', {
     agentId: 'agent-bruno',
     taskId: 'task-ln-3',
     sessionId: 'session-bruno',
+  });
+  s = log(s, 0, 'session_started', 'Hana started a simulated session on SP-2.', {
+    projectId: SPROUT_PROJECT_ID,
+    agentId: 'agent-hana',
+    taskId: 'task-sp-2',
+    sessionId: 'session-hana',
   });
   s = log(s, 5, 'session_started', 'Chen started a simulated session on LN-4, which depends on LN-3.', {
     agentId: 'agent-chen',
@@ -242,4 +280,30 @@ export function seedCompany(): WorkflowSnapshot {
     taskId: 'task-ln-5',
   });
   return advanceClock(s, 5);
+}
+
+/** Sprout's board: two tasks under way, one ready, one waiting in the backlog. */
+function sproutTasks(): Task[] {
+  const projectId = SPROUT_PROJECT_ID;
+  return [
+    task('task-sp-1', 'SP-1', 'Watering schedule model', 'in_progress', 'agent-ivo', 'high', {
+      projectId,
+      description: 'How often each plant needs water, so reminders have something to count down from.',
+      branch: 'feature/watering-schedule',
+    }),
+    task('task-sp-2', 'SP-2', 'Plant cards with photos', 'in_progress', 'agent-hana', 'medium', {
+      projectId,
+      description: 'A card per plant with its photo, name, and a badge when it is due for water.',
+      branch: 'feature/plant-cards',
+    }),
+    task('task-sp-3', 'SP-3', 'Watering reminders', 'ready', 'agent-kit', 'medium', {
+      projectId,
+      description: 'A daily reminder listing the plants that are due, built on the schedule model.',
+      dependsOn: ['task-sp-1'],
+    }),
+    task('task-sp-4', 'SP-4', 'Care tips copy', 'backlog', null, 'low', {
+      projectId,
+      description: 'Short care tips for the ten most common houseplants.',
+    }),
+  ];
 }

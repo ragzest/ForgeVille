@@ -6,7 +6,7 @@ import {
   type TaskPriority,
   type WorkflowSnapshot,
 } from '../../domain/index.ts';
-import { floorById, occupantOf, type FloorId } from '../building.ts';
+import { floorById, floorSnapshot, occupantOf, type FloorId } from '../building.ts';
 
 /**
  * The Kanban board view model. The in-world whiteboard paints it and the board
@@ -96,8 +96,7 @@ export function floorBoard(snapshot: WorkflowSnapshot, floorId: FloorId): FloorB
   if (!project) {
     return { heading: `${floorById(floorId).theme.name} · task board`, columns: boardColumns({ ...snapshot, tasks: [] }), occupied: false };
   }
-  const tasks = snapshot.tasks.filter((t) => t.projectId === project.id);
-  return { heading: `${project.name} · task board`, columns: boardColumns({ ...snapshot, tasks }), occupied: true };
+  return { heading: `${project.name} · task board`, columns: boardColumns(floorSnapshot(snapshot, floorId)), occupied: true };
 }
 
 export interface WallNote {

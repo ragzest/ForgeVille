@@ -41,12 +41,18 @@ describe.each(SCENARIO_IDS)('scenario %s', (id) => {
     expect(Math.max(...times)).toBeLessThanOrEqual(Date.parse(s.clock.now));
   });
 
-  it('has one project, seven distinct agents, and dependencies', () => {
-    expect(s.projects).toHaveLength(1);
-    expect(s.agents.length).toBeGreaterThanOrEqual(6);
-    expect(s.agents.length).toBeLessThanOrEqual(8);
+  it('has Lantern first with seven agents, a smaller second team, and dependencies', () => {
+    expect(s.projects.map((p) => p.name)).toEqual(['Lantern', 'Sprout']);
+    const team = (projectId: string) => s.agents.filter((a) => a.projectId === projectId);
+    const [lantern, sprout] = s.projects.map((p) => team(p.id));
+    expect(lantern).toHaveLength(7);
+    expect(sprout?.length).toBeGreaterThanOrEqual(3);
+    expect(sprout?.length).toBeLessThanOrEqual(5);
+    expect(s.tasks.some((t) => t.projectId === s.projects[1]?.id)).toBe(true);
+    expect(s.sessions.some((x) => sprout?.some((a) => a.id === x.agentId))).toBe(true);
+    // Names are unique across the building; roles are unique within a team.
     expect(new Set(s.agents.map((a) => a.name)).size).toBe(s.agents.length);
-    expect(new Set(s.agents.map((a) => a.role)).size).toBe(s.agents.length);
+    for (const members of [lantern ?? [], sprout ?? []]) expect(new Set(members.map((a) => a.role)).size).toBe(members.length);
     expect(new Set(s.agents.map((a) => a.runtimeLabel)).size).toBeGreaterThan(1);
     expect(new Set(s.agents.map((a) => a.modelLabel)).size).toBeGreaterThan(1);
     expect(s.agents.every((a) => a.mockUsage === null || a.mockUsage.isMockEstimate)).toBe(true);
@@ -62,7 +68,8 @@ describe('scenario contents', () => {
   it('feature in progress: three developers working, nothing to review', () => {
     const s = buildScenario('feature-in-progress');
     expect(presence(s)).toMatchObject({ Ada: 'working', Bruno: 'working', Chen: 'working', Dara: 'idle', Fern: 'idle' });
-    expect(missionControlMetrics(s)).toMatchObject({ openPullRequests: 0, queuedTasks: 3, successfulMerges: 1, blockedTasks: 0 });
+    // Sprout adds SP-3 (ready) and SP-4 (backlog) to the queue.
+    expect(missionControlMetrics(s)).toMatchObject({ openPullRequests: 0, queuedTasks: 5, successfulMerges: 1, blockedTasks: 0 });
   });
 
   it('review and QA pass: pull request #2 is eligible to merge', () => {

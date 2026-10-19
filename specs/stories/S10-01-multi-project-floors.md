@@ -1,6 +1,6 @@
 # S10-01 — Multi-project floors
 
-Status: todo
+Status: done
 Epic: [E10](../epics/E10-living-building.md)
 Depends on: S09-01, S03-04
 

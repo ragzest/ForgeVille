@@ -14,3 +14,8 @@ export interface DeskView {
 export function vacantDesks(): DeskView[] {
   return DESK_SLOTS.map((slot) => ({ slot, desk: null, name: '', screen: VACANT_SCREEN }));
 }
+
+/** A floor's desks: its team's desks first, then the empty slots, so a small team still sits in a furnished room. */
+export function floorDesks(occupied: readonly DeskView[]): DeskView[] {
+  return [...occupied, ...vacantDesks().slice(occupied.length)];
+}

@@ -880,6 +880,16 @@ kbd {
   font-weight: 500;
 }
 
+.elevator-summary {
+  font-size: 0.8rem;
+  color: var(--fv-ink-soft);
+}
+
+.elevator-summary.is-blocked {
+  color: var(--fv-danger-deep);
+  font-weight: 700;
+}
+
 /* ---------------------------------------------------------------- motion */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1466,8 +1476,35 @@ kbd {
 
 .mission-events li {
   display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr);
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
   gap: 0.4rem;
+  align-items: start;
+}
+
+.mission-event-desk {
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  border: 2px solid var(--fv-line);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mission-event-desk:hover,
+.mission-event-desk:focus-visible {
+  border-color: var(--fv-ink);
+}
+
+.mission-section {
+  margin-bottom: 0.75rem;
+}
+
+.mission-section-note {
+  font-weight: 500;
+  color: var(--fv-ink-soft);
 }
 
 .mission-events time {

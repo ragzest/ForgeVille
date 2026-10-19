@@ -1,11 +1,12 @@
 import { useInteraction } from '../../store/interaction.ts';
 import { useNavigation } from '../../store/navigation.ts';
 import { useWorkflow } from '../../store/context.ts';
-import { buildingDirectory, floorTitle } from '../../world/building.ts';
+import { buildingDirectory, floorSummary, floorSummaryText, floorTitle } from '../../world/building.ts';
 
 /**
- * The elevator: every floor, its theme, and who works there. Riding keeps the
- * visitor's spot in the floor plan. Vacant floors are open to visit.
+ * The elevator: every floor, its theme, who works there, and a live summary
+ * of each team. Riding keeps the visitor's spot in the floor plan. Vacant
+ * floors are open to visit.
  */
 export function ElevatorPanel({ title }: { title: string }) {
   const snapshot = useWorkflow((s) => s.snapshot);
@@ -27,6 +28,7 @@ export function ElevatorPanel({ title }: { title: string }) {
       <ol className="elevator-floors" aria-label="Floors">
         {floors.map(({ floor, project }) => {
           const here = floor.id === current;
+          const summary = floorSummary(snapshot, floor.id);
           return (
             <li key={floor.id} className="elevator-floor" style={{ '--floor-accent': floor.theme.accent } as React.CSSProperties}>
               <span className="elevator-level" aria-hidden="true">
@@ -38,6 +40,11 @@ export function ElevatorPanel({ title }: { title: string }) {
                 <span className={project ? 'elevator-occupant' : 'elevator-occupant is-vacant'}>
                   {project ? `${project.name} team` : 'Vacant'}
                 </span>
+                {summary && (
+                  <span className={summary.blockedTasks > 0 ? 'elevator-summary is-blocked' : 'elevator-summary'} data-floor-summary={floor.id}>
+                    {floorSummaryText(summary)}
+                  </span>
+                )}
               </span>
               <button
                 type="button"

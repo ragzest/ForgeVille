@@ -4,10 +4,10 @@ import { ACESFilmicToneMapping, PCFShadowMap } from 'three';
 import { useWorkflow } from '../store/context.ts';
 import { interactionStore } from '../store/interaction.ts';
 import { navigationStore, useNavigation } from '../store/navigation.ts';
-import { floorById, floorTitle, occupantOf } from './building.ts';
+import { floorById, floorSnapshot, floorTitle, occupantOf } from './building.ts';
 import { Characters } from './characters/Characters.tsx';
 import { characterModels } from './characters/models.ts';
-import { vacantDesks, type DeskView } from './deskViews.ts';
+import { floorDesks } from './deskViews.ts';
 import { Furniture } from './Furniture.tsx';
 import { interactionTargets } from './interaction.ts';
 import { lockPointer } from './interactable.ts';
@@ -42,22 +42,24 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
   const vacant = project === null;
 
   const scene = useMemo(() => {
-    const team = project ? snapshot.agents.filter((a) => a.projectId === project.id) : [];
-    const desks: DeskView[] = vacant
-      ? vacantDesks()
-      : deskAssignments(team).map((desk) => ({
-          slot: desk.slot,
-          desk,
-          name: team.find((a) => a.id === desk.agentId)?.name ?? desk.agentId,
-          screen: screenModel(snapshot, desk.agentId),
-        }));
+    // Everything on this floor reads the floor's slice of the snapshot.
+    const here = floorSnapshot(snapshot, floorId);
+    const team = here.agents;
+    const desks = floorDesks(
+      deskAssignments(team).map((desk) => ({
+        slot: desk.slot,
+        desk,
+        name: team.find((a) => a.id === desk.agentId)?.name ?? desk.agentId,
+        screen: screenModel(here, desk.agentId),
+      })),
+    );
     const board = floorBoard(snapshot, floorId);
-    const qa = vacant ? { heading: null, rows: [] } : qaDisplay(snapshot);
-    const tiles = vacant ? [] : statusTiles(snapshot);
+    const qa = vacant ? { heading: null, rows: [] } : qaDisplay(here);
+    const tiles = vacant ? [] : statusTiles(here);
     const statusTitle = project ? `${project.name} · status` : `${floorTitle(floor)} · vacant`;
     return {
       desks,
-      characters: vacant ? [] : characterModels(snapshot, reducedMotion, team),
+      characters: vacant ? [] : characterModels(here, reducedMotion),
       targets: vacant ? interactionTargets([], VACANT_FLOOR_LANDMARKS) : interactionTargets(team),
       plaque: project?.name ?? `${floor.theme.name} · vacant`,
       board: { columns: board.columns, heading: board.heading, key: `${floor.id}|${JSON.stringify(board.columns)}` },

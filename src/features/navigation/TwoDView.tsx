@@ -12,7 +12,7 @@ import { statusTiles } from '../../world/screens/displays.ts';
 import { CHECK_STATUS, qaDisplay } from '../../world/screens/qa.ts';
 import { EMPTY_COLUMN_COPY, PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
 import { deskId } from '../desks/deskDetails.ts';
-import { buildingDirectory, floorById, floorTitle } from '../../world/building.ts';
+import { floorById, floorSnapshot, floorTitle, occupantOf } from '../../world/building.ts';
 
 const ZONE_NOTES: Readonly<Record<ZoneId, string>> = {
   reception: 'Project plaque and front desk.',
@@ -36,29 +36,32 @@ export function TwoDView() {
   const openId = useInteraction((s) => s.open?.id ?? null);
   const floorId = useNavigation((s) => s.floor);
   const goToFloor = useNavigation((s) => s.goToFloor);
-  const home = buildingDirectory(snapshot).find((o) => o.project !== null);
-  const vacant = home !== undefined && home.floor.id !== floorId;
+  // A vacant floor lists the first occupied floor's team, and says so.
+  const listed = floorById(boardFloor(snapshot, floorId));
+  const home = occupantOf(snapshot, listed.id);
+  const vacant = home !== null && listed.id !== floorId;
 
-  const board = floorBoard(snapshot, boardFloor(snapshot, floorId));
-  const qa = qaDisplay(snapshot);
-  const tiles = statusTiles(snapshot);
+  const here = floorSnapshot(snapshot, listed.id);
+  const board = floorBoard(snapshot, listed.id);
+  const qa = qaDisplay(here);
+  const tiles = statusTiles(here);
 
   return (
     <div className="two-d">
       {vacant && (
         <div className="shell-panel shell-panel--notice two-d-vacant" role="status">
           <p>
-            <strong>{floorTitle(floorById(floorId))}</strong> is vacant. The {home.project?.name} team works on{' '}
-            {floorTitle(home.floor)}; the lists below are theirs.
+            <strong>{floorTitle(floorById(floorId))}</strong> is vacant. The {home.name} team works on{' '}
+            {floorTitle(listed)}; the lists below are theirs.
           </p>
           <button
             type="button"
             className="btn"
             onClick={() => {
-              goToFloor(home.floor.id);
+              goToFloor(listed.id);
             }}
           >
-            Go to {floorTitle(home.floor)}
+            Go to {floorTitle(listed)}
           </button>
         </div>
       )}
@@ -88,8 +91,13 @@ export function TwoDView() {
 
       <section className="shell-region" aria-labelledby="fallback-team-heading">
         <h2 id="fallback-team-heading">Team</h2>
+        {home && (
+          <p className="two-d-muted">
+            {home.name} team · {floorTitle(listed)}
+          </p>
+        )}
         <ul className="two-d-list">
-          {snapshot.agents.map((agent) => {
+          {here.agents.map((agent) => {
             const id = deskId(agent.id);
             const label = deskLabel(agent.name);
             return (
@@ -97,7 +105,7 @@ export function TwoDView() {
                 <span>
                   <strong>{agent.name}</strong> <span className="two-d-muted">{agent.role}</span>
                 </span>
-                <PresenceBadge presence={presenceOf(snapshot, agent.id)} />
+                <PresenceBadge presence={presenceOf(here, agent.id)} />
                 <button
                   type="button"
                   className="zone-button"

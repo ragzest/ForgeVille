@@ -46,7 +46,11 @@ describe('board view model', () => {
     const home = floorBoard(snapshot, 'workshop');
     expect(home.occupied).toBe(true);
     expect(home.heading).toBe('Lantern · task board');
-    expect(home.columns.flatMap((c) => c.cards)).toHaveLength(snapshot.tasks.length);
+    expect(home.columns.flatMap((c) => c.cards)).toHaveLength(snapshot.tasks.filter((t) => t.projectId === 'project-lantern').length);
+
+    const upstairs = floorBoard(snapshot, 'greenhouse');
+    expect(upstairs.heading).toBe('Sprout · task board');
+    expect(upstairs.columns.flatMap((c) => c.cards.map((card) => card.issueKey)).sort()).toEqual(['SP-1', 'SP-2', 'SP-3', 'SP-4']);
 
     const vacant = floorBoard(snapshot, 'ember-forge');
     expect(vacant.occupied).toBe(false);

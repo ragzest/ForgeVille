@@ -7,6 +7,7 @@ import {
   type WorkflowSnapshot,
 } from '../../domain/index.ts';
 import { interactionStore } from '../../store/interaction.ts';
+import { floorById, floorSnapshot, floorTitle, occupantOf, type FloorId } from '../../world/building.ts';
 import { statusTilesFrom, type StatusTile } from '../../world/screens/displays.ts';
 import { clockTime } from '../desks/deskDetails.ts';
 
@@ -39,11 +40,24 @@ export interface FeedEvent {
   readonly message: string;
   /** Icon and word for events that need attention; null for routine ones. */
   readonly flag: { readonly icon: string; readonly text: string; readonly tone: 'danger' | 'amber' | 'success' } | null;
+  /** The agent the event is about, so the feed can open their desk; null when it names nobody. */
+  readonly agent: { readonly id: string; readonly name: string } | null;
+}
+
+/** The current floor's part of the overlay: the same four numbers its status display shows. */
+export interface FloorSection {
+  /** "Floor 2 · Greenhouse · Sprout team", or "… · vacant". */
+  readonly title: string;
+  readonly occupied: boolean;
+  /** The floor's status display tiles, from the floor's slice of the snapshot. */
+  readonly tiles: readonly StatusTile[];
 }
 
 export interface MissionControlView {
+  /** Building totals: every project on every floor. */
   readonly tiles: readonly MissionTile[];
-  /** The status display's four tiles, from the same metrics as `tiles`. */
+  readonly floor: FloorSection;
+  /** The floor's status display tiles; the same values as `floor.tiles`. */
   readonly statusTiles: readonly StatusTile[];
   readonly events: readonly FeedEvent[];
   /** One line for the collapsed overlay on a narrow screen. */
@@ -107,22 +121,46 @@ export function recentEvents(snapshot: WorkflowSnapshot, limit: number = RECENT_
     .slice(0, Math.max(0, limit))
     .map(({ event }) => ({
       id: event.id,
-      timestamp: event.timestamp,
+        timestamp: event.timestamp,
       time: clockTime(event.timestamp),
       message: event.message,
       flag: FLAGS[event.type] ?? null,
+      agent: agentOf(snapshot, event.links.agentId),
     }));
 }
 
-/** Everything the overlay shows, from one `missionControlMetrics` call. */
-export function missionControlView(snapshot: WorkflowSnapshot): MissionControlView {
+function agentOf(snapshot: WorkflowSnapshot, agentId: string | undefined): FeedEvent['agent'] {
+  const agent = agentId === undefined ? undefined : snapshot.agents.find((a) => a.id === agentId);
+  return agent ? { id: agent.id, name: agent.name } : null;
+}
+
+/** The current floor's section: its status tiles, or none on a vacant floor. */
+export function floorSection(snapshot: WorkflowSnapshot, floorId: FloorId): FloorSection {
+  const floor = floorById(floorId);
+  const project = occupantOf(snapshot, floorId);
+  if (!project) return { title: `${floorTitle(floor)} · vacant`, occupied: false, tiles: [] };
+  return {
+    title: `${floorTitle(floor)} · ${project.name} team`,
+    occupied: true,
+    tiles: statusTilesFrom(missionControlMetrics(floorSnapshot(snapshot, floorId))),
+  };
+}
+
+/**
+ * Everything the overlay shows: building totals from one `missionControlMetrics`
+ * call over the whole snapshot, and the current floor's numbers from the same
+ * call over that floor's slice. The event feed covers the whole building.
+ */
+export function missionControlView(snapshot: WorkflowSnapshot, floorId: FloorId): MissionControlView {
   const m = missionControlMetrics(snapshot);
+  const floor = floorSection(snapshot, floorId);
   return {
     tiles: missionTiles(m),
-    statusTiles: statusTilesFrom(m),
+    floor,
+    statusTiles: floor.tiles,
     events: recentEvents(snapshot),
     summary: [
-      `${String(m.activeAgents)} active`,
+      `Building: ${String(m.activeAgents)} active`,
       `⛔ ${plural(m.blockedTasks, 'blocked', 'blocked')}`,
       `✕ ${plural(m.recentFailures.length, 'failure', 'failures')}`,
     ].join(' · '),

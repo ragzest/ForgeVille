@@ -7,6 +7,7 @@ import { INITIAL_INTERACTION, interactionStore } from '../../store/interaction.t
 import { INITIAL_NAVIGATION, navigationStore } from '../../store/navigation.ts';
 import { WorkflowProvider } from '../../store/WorkflowProvider.tsx';
 import { createWorkflowStore, type WorkflowStore } from '../../store/workflowStore.ts';
+import { floorSnapshot } from '../../world/building.ts';
 import { statusTiles } from '../../world/screens/displays.ts';
 import { InteractionPanel } from '../navigation/InteractionPanel.tsx';
 import { NavigationToolbar } from '../navigation/NavigationToolbar.tsx';
@@ -76,7 +77,7 @@ describe('mission control, minimal fixture', () => {
     const snapshot = minimalSnapshot();
     const panel = openOverlay(storeWith(snapshot));
     const m = missionControlMetrics(snapshot);
-    const labels = within(within(panel).getByRole('list', { name: 'Metrics' }))
+    const labels = within(within(panel).getByRole('list', { name: 'Building metrics' }))
       .getAllByRole('listitem')
       .map((li) => li.querySelector('.mission-tile-label')?.textContent);
     expect(labels).toEqual([
@@ -171,24 +172,52 @@ describe('mission control, demo scenarios', () => {
     expect([...times].sort().reverse()).toEqual(times);
   });
 
-  it('agrees with the in-world status display in every scenario', () => {
-    const keys: Record<string, string> = {
-      'Active agents': 'activeAgents',
-      'Open PRs': 'openPullRequests',
-      Blocked: 'blockedTasks',
-      Merged: 'successfulMerges',
-    };
+  it("agrees with the current floor's in-world status display in every scenario", () => {
     for (const id of SCENARIO_IDS) {
       const store = scenarioStore(id);
       const panel = openOverlay(store);
-      const tiles = statusTiles(store.getState().snapshot);
+      const tiles = statusTiles(floorSnapshot(store.getState().snapshot, 'workshop'));
       expect(tiles).toHaveLength(4);
-      for (const t of tiles) expect(number(panel, keys[t.label] ?? t.label)).toBe(t.value);
+      const floor = within(panel).getByRole('list', { name: 'This floor' });
+      for (const t of tiles) {
+        expect(floor.querySelector(`[data-floor-metric="${t.label}"] .mission-tile-value`)?.textContent).toBe(t.value);
+      }
       act(() => {
         interactionStore.getState().close();
       });
       document.body.innerHTML = '';
     }
+  });
+
+  it('labels the current floor apart from the building totals', () => {
+    const store = scenarioStore('feature-in-progress');
+    act(() => {
+      navigationStore.getState().goToFloor('greenhouse');
+    });
+    const panel = openOverlay(store);
+    expect(within(panel).getByRole('heading', { name: /This floor/ })).toHaveTextContent('This floor · Floor 2 · Greenhouse · Sprout team');
+    expect(within(panel).getByRole('heading', { name: /Building/ })).toHaveTextContent('Building · all floors');
+    const floor = within(panel).getByRole('list', { name: 'This floor' });
+    expect(floor.querySelector('[data-floor-metric="Active agents"] .mission-tile-value')?.textContent).toBe('2');
+    expect(number(panel, 'activeAgents')).toBe('5');
+    expect(number(panel, 'totalProjects')).toBe('2');
+  });
+
+  it('says so on a vacant floor', () => {
+    act(() => {
+      navigationStore.getState().goToFloor('night-studio');
+    });
+    const panel = openOverlay(scenarioStore('feature-in-progress'));
+    expect(within(panel).getByRole('heading', { name: /This floor/ })).toHaveTextContent('Floor 3 · Night Studio · vacant');
+    expect(within(panel).queryByRole('list', { name: 'This floor' })).not.toBeInTheDocument();
+  });
+
+  it('opens a desk from the feed, offering the ride when the agent is upstairs', async () => {
+    const user = userEvent.setup();
+    const panel = openOverlay(scenarioStore('feature-in-progress'));
+    await user.click(within(panel).getByRole('button', { name: "Open Hana's desk" }));
+    const away = screen.getByRole('dialog', { name: "Hana's desk" });
+    expect(within(away).getByRole('button', { name: 'Go to floor 2' })).toBeInTheDocument();
   });
 
   it('follows a merge from the QA panel', async () => {
@@ -214,21 +243,21 @@ describe('mission control on a narrow viewport', () => {
     const panel = openOverlay(scenarioStore('agent-blocked'));
     const summary = within(panel).getByRole('button', { name: /active/ });
     expect(summary).toHaveAttribute('aria-expanded', 'false');
-    expect(summary).toHaveTextContent('2 active · ⛔ 1 blocked · ✕ 0 failures');
-    expect(within(panel).queryByRole('list', { name: 'Metrics' })).not.toBeInTheDocument();
+    expect(summary).toHaveTextContent('Building: 4 active · ⛔ 1 blocked · ✕ 0 failures');
+    expect(within(panel).queryByRole('list', { name: 'Building metrics' })).not.toBeInTheDocument();
     // The close control stays visible while collapsed.
     expect(within(panel).getByRole('button', { name: 'Close panel' })).toBeVisible();
 
     await user.click(summary);
     expect(summary).toHaveAttribute('aria-expanded', 'true');
-    expect(within(panel).getByRole('list', { name: 'Metrics' })).toBeInTheDocument();
+    expect(within(panel).getByRole('list', { name: 'Building metrics' })).toBeInTheDocument();
   });
 
   it('shows everything without a summary button on a wide viewport', () => {
     setNarrow(false);
     const panel = openOverlay(scenarioStore('agent-blocked'));
     expect(within(panel).queryByRole('button', { name: /active/ })).not.toBeInTheDocument();
-    expect(within(panel).getByRole('list', { name: 'Metrics' })).toBeInTheDocument();
+    expect(within(panel).getByRole('list', { name: 'Building metrics' })).toBeInTheDocument();
   });
 });
 

@@ -59,6 +59,7 @@ describe('floors and the elevator', () => {
     expect(floors[0]).toHaveTextContent('Ember Forge');
     expect(floors[3]).toHaveTextContent('Lantern team');
     expect(floors[0]).toHaveTextContent('Vacant');
+    expect(floors[2]).toHaveTextContent('Sprout team');
     expect(within(panel).getByRole('button', { name: 'Floor 1 · Workshop, you are here' })).toBeDisabled();
 
     await user.click(within(panel).getByRole('button', { name: 'Go to Floor 2 · Greenhouse' }));
@@ -76,6 +77,61 @@ describe('floors and the elevator', () => {
     await user.click(screen.getByRole('button', { name: 'Go to Floor 1 · Workshop' }));
     expect(navigationStore.getState().floor).toBe('workshop');
     expect(screen.queryByText(/is vacant/)).not.toBeInTheDocument();
+  });
+
+  it("shows each occupied floor's live summary in the elevator", () => {
+    const store = createWorkflowStore();
+    store.getState().loadScenario('agent-blocked');
+    render(
+      <WorkflowProvider store={store}>
+        <InteractionPanel />
+      </WorkflowProvider>,
+    );
+    act(() => {
+      interactionStore.getState().activate({ id: 'elevator', label: 'Elevator' });
+    });
+    const panel = screen.getByRole('dialog', { name: 'Elevator' });
+    const summary = (floor: string) => panel.querySelector(`[data-floor-summary="${floor}"]`);
+    expect(summary('workshop')).toHaveTextContent('2 active agents · ⛔ 1 blocked task');
+    expect(summary('greenhouse')).toHaveTextContent('2 active agents · nothing blocked');
+    expect(summary('night-studio')).toBeNull();
+    // Live: a change in the snapshot shows up without reopening.
+    act(() => {
+      store.getState().moveTask('task-sp-2', 'blocked');
+    });
+    expect(summary('greenhouse')).toHaveTextContent('1 active agent · ⛔ 1 blocked task');
+  });
+
+  it("lists only the current floor's team in the 2D view", async () => {
+    const user = userEvent.setup();
+    renderBuilding({ twoD: true });
+    const team = () => within(screen.getByRole('region', { name: 'Team' }));
+    expect(team().getByText('Ada')).toBeInTheDocument();
+    expect(team().queryByText('Hana')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Floor 2 · Greenhouse' }));
+    expect(team().getByText('Sprout team · Floor 2 · Greenhouse')).toBeInTheDocument();
+    expect(team().getAllByRole('listitem').map((li) => li.querySelector('strong')?.textContent)).toEqual(['Hana', 'Ivo', 'Juno', 'Kit']);
+    expect(team().queryByText('Ada')).not.toBeInTheDocument();
+    const board = within(screen.getByRole('region', { name: 'Board' }));
+    expect(board.getByText('SP-1')).toBeInTheDocument();
+    expect(board.queryByText('LN-2')).not.toBeInTheDocument();
+  });
+
+  it('offers the ride instead of a desk panel for someone on another floor', async () => {
+    const user = userEvent.setup();
+    renderBuilding();
+    act(() => {
+      interactionStore.getState().activate({ id: 'desk:agent-hana', label: "Hana's desk" });
+    });
+    const panel = screen.getByRole('dialog', { name: "Hana's desk" });
+    expect(panel).toHaveTextContent('Hana works on Floor 2 · Greenhouse with the Sprout team. You are on Floor 1 · Workshop.');
+    expect(within(panel).queryByText(/Agent id/)).not.toBeInTheDocument();
+
+    await user.click(within(panel).getByRole('button', { name: 'Go to floor 2' }));
+    expect(navigationStore.getState().floor).toBe('greenhouse');
+    // On arrival the real desk panel opens.
+    expect(screen.getByRole('dialog', { name: "Hana's desk" })).toHaveTextContent('Agent id');
   });
 
   it('offers only the elevator on a vacant floor', () => {
