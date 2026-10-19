@@ -1,6 +1,7 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import {
   missionControlMetrics,
+  type MissionControlMetrics,
   type WorkflowSnapshot,
 } from '../../domain/index.ts';
 import { MONO_FONT, UI_FONT } from '../../ui/fonts.ts';
@@ -34,14 +35,18 @@ export interface StatusTile {
   readonly tone: 'neutral' | 'success' | 'danger' | 'review';
 }
 
-export function statusTiles(snapshot: WorkflowSnapshot): StatusTile[] {
-  const m = missionControlMetrics(snapshot);
+/** The status display's four numbers. Mission control passes its own metrics, so both show one call's values. */
+export function statusTilesFrom(m: MissionControlMetrics): StatusTile[] {
   return [
     { label: 'Active agents', value: String(m.activeAgents), tone: 'success' },
     { label: 'Open PRs', value: String(m.openPullRequests), tone: 'review' },
     { label: 'Blocked', value: String(m.blockedTasks), tone: m.blockedTasks > 0 ? 'danger' : 'neutral' },
     { label: 'Merged', value: String(m.successfulMerges), tone: 'neutral' },
   ];
+}
+
+export function statusTiles(snapshot: WorkflowSnapshot): StatusTile[] {
+  return statusTilesFrom(missionControlMetrics(snapshot));
 }
 
 // ---------------------------------------------------------------------------
