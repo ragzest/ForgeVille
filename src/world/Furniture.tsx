@@ -5,6 +5,7 @@ import { COLORS } from '../ui/tokens.ts';
 import { interactProps } from './interactable.ts';
 import { floorLabel } from './labels.ts';
 import {
+  COFFEE_CART,
   DESK,
   FLOOR,
   LANDMARKS,
@@ -304,6 +305,22 @@ function MeetingArea() {
   );
 }
 
+/** A little coffee cart: a cabinet, a machine with a glowing button, and a stack of cups. */
+function CoffeeCart() {
+  const { materials, floor } = useFloorScene();
+  const { center, width, depth, height } = COFFEE_CART;
+  return (
+    <group name="coffee-cart" position={[center.x, 0, center.z]}>
+      <Solid material={materials.wood} position={[0, height / 2, 0]} scale={[width, height, depth]} />
+      <Solid material={materials.deskTop} position={[0, height + 0.02, 0]} scale={[width + 0.06, 0.04, depth + 0.04]} />
+      <Solid material={MATERIALS.bezel} position={[-0.15, height + 0.24, 0.02]} scale={[0.34, 0.42, 0.3]} />
+      <mesh geometry={GEOMETRIES.sphere} material={glow(floor.theme.accent)} position={[-0.15, height + 0.34, -0.14]} scale={[0.05, 0.05, 0.02]} />
+      <Solid geometry="cylinder" material={toon('#fffdf6')} position={[0.22, height + 0.1, 0]} scale={[0.12, 0.16, 0.12]} />
+      <Solid geometry="cylinder" material={toon('#fffdf6')} position={[0.22, height + 0.2, 0]} scale={[0.12, 0.04, 0.12]} />
+    </group>
+  );
+}
+
 function Plant({ at, index }: { at: Point2; index: number }) {
   const { materials } = useFloorScene();
   // Deterministic variety from the plant's index, not Math.random.
@@ -399,6 +416,7 @@ export function Furniture({ desks, plaque, board, qa, status }: FurnitureProps) 
       <Reception plaque={plaque} />
       <Elevator />
       <MeetingArea />
+      <CoffeeCart />
       <Posters />
       {PLANTS.map((p, i) => (
         <Plant key={`${String(p.x)}:${String(p.z)}`} at={p} index={i} />

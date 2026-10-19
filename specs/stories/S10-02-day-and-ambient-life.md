@@ -1,6 +1,6 @@
 # S10-02 — Time of day and ambient life
 
-Status: todo
+Status: done
 Epic: [E10](../epics/E10-living-building.md)
 Depends on: S03-04, S09-02
 

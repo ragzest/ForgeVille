@@ -6,9 +6,9 @@ import { GEOMETRIES, OUTLINE_MATERIAL, hullGeometry, themeMaterials, wantsOutlin
 
 export type Vec3 = [number, number, number];
 
-export function FloorSceneProvider({ floor, interactive, reducedMotion, children }: Omit<FloorScene, 'materials'> & { children: ReactNode }) {
+export function FloorSceneProvider({ floor, interactive, reducedMotion, sky, children }: Omit<FloorScene, 'materials'> & { children: ReactNode }) {
   return (
-    <FloorSceneContext.Provider value={{ floor, materials: themeMaterials(floor.theme), interactive, reducedMotion }}>
+    <FloorSceneContext.Provider value={{ floor, materials: themeMaterials(floor.theme), interactive, reducedMotion, sky }}>
       {children}
     </FloorSceneContext.Provider>
   );

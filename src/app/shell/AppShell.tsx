@@ -13,6 +13,7 @@ import { readScenarioQuery } from '../scenarioQuery.ts';
 import { switchScenario } from '../switchScenario.ts';
 import { themeCssVars } from '../../ui/themes.ts';
 import { floorById, floorTitle, occupantOf } from '../../world/building.ts';
+import { skyPhase } from '../../world/dayCycle.ts';
 import { ErrorView, FallbackView, LoadingView, OfficeView } from './ShellViews.tsx';
 
 interface AppShellProps {
@@ -87,6 +88,9 @@ export function AppShell({ environment }: AppShellProps) {
   // The page chrome takes the current floor's accent.
   const floor = floorById(useNavigation((s) => s.floor));
   const occupant = useWorkflow((s) => occupantOf(s.snapshot, floor.id)?.name ?? null);
+  // With "Follow the clock" on, the page says which part of the day the sky shows.
+  const followClock = useNavigation((s) => s.followClock);
+  const phase = useWorkflow((s) => skyPhase(s.snapshot.clock.now));
 
   // Ready only once the canvas has mounted.
   const status: ShellStatus = state.status === 'ready' && !officeMounted ? 'loading' : state.status;
@@ -98,6 +102,7 @@ export function AppShell({ environment }: AppShellProps) {
         data-shell-status={status}
         data-reduced-motion={preferences.reducedMotion}
         data-floor={floor.id}
+        data-sky={followClock ? phase : floor.theme.mood}
         style={themeCssVars(floor.theme)}
       >
         <header className="shell-header">

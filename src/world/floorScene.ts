@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { SkySettings } from '../ui/themes.ts';
 import type { Floor } from './building.ts';
 import type { ThemeMaterials } from './materials.ts';
 
@@ -9,6 +10,8 @@ export interface FloorScene {
   /** False on vacant floors: furniture renders but nothing opens a panel. */
   readonly interactive: boolean;
   readonly reducedMotion: boolean;
+  /** The sky to show: the floor's own mood, or the clock-driven one (`dayCycle.ts`). */
+  readonly sky: SkySettings;
 }
 
 export const FloorSceneContext = createContext<FloorScene | null>(null);

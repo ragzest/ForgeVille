@@ -8,7 +8,8 @@ import { floorLabel } from '../labels.ts';
 import type { Point2 } from '../layout.ts';
 import { GEOMETRIES, MATERIALS, toon } from '../materials.ts';
 import { Solid, type Vec3 } from '../Solid.tsx';
-import type { Accessory, Mark, MarkTone, Pose, PresenceLook } from './presentation.ts';
+import { errandAt, seatOf, type ErrandFrame, type ErrandPlan } from './errands.ts';
+import { SIGH_LENGTH, SIGH_EVERY, sighAmount, typingBurst, type Accessory, type Mark, type MarkTone, type Pose, type PresenceLook } from './presentation.ts';
 
 export interface CharacterProps {
   agentId: string;
@@ -23,6 +24,10 @@ export interface CharacterProps {
   /** Name tag text, e.g. `Ada · LN-2`. */
   tag: string;
   look: PresenceLook;
+  /** What this agent does between tasks, when idle. Null keeps it in its chair. */
+  errand: ErrandPlan | null;
+  /** Id of the merge this agent is celebrating; each one plays one confetti burst at the desk. */
+  confetti: string | null;
   /** Offsets the motion loop so neighbours don't move in step. */
   phase: number;
 }
@@ -209,36 +214,119 @@ function Face({ pose, eyes }: { pose: Pose; eyes: React.RefObject<Group | null> 
   );
 }
 
+/** How much higher the hips sit when standing than on the chair. */
+const STAND_LIFT = 0.12;
+const PUFF_MATERIAL = toon('#f4f7ff');
+const CUP_MATERIAL = toon('#fffdf6');
+
+/** Arm angles while standing, for each moment of an errand. */
+function errandArms(frame: ErrandFrame, t: number): { left: number; right: number; armZ: number; head: number; sway: number } {
+  if (frame.stage !== 'there') {
+    // Walking: arms swing against the legs.
+    const swing = Math.sin(t * 8) * 0.45;
+    return { left: swing, right: -swing, armZ: 0.08, head: 0, sway: 0 };
+  }
+  switch (frame.kind) {
+    case 'coffee': {
+      // Cup to the mouth now and then.
+      const sip = Math.max(0, Math.sin(t * 1.3)) ** 3;
+      return { left: 0.1, right: 1.1 + sip * 1.2, armZ: -0.15, head: 0.1 * sip, sway: 0 };
+    }
+    case 'stretch':
+      return { left: 2.95, right: 2.95, armZ: 0.25, head: 0.25, sway: Math.sin(t * 1.4) * 0.12 };
+    case 'chat':
+      return { left: 0.3, right: 0.75 + Math.sin(t * 3.1) * 0.35, armZ: 0.05, head: Math.sin(t * 2.3) * 0.08, sway: Math.sin(t * 0.9) * 0.04 };
+  }
+}
+
 /**
  * A seated, cel-shaded character. Pose, face, and mark come from the derived
- * presence; the motion loop only moves this mesh and never touches workflow state.
+ * presence; the motion loop and any errand only move this mesh and never touch
+ * workflow state.
  */
-export function Character({ agentId, name, slot, accessory, shirt, hair, accent, tag, look, phase }: CharacterProps) {
+export function Character({ agentId, name, slot, accessory, shirt, hair, accent, tag, look, errand, phase }: CharacterProps) {
+  const body = useRef<Group>(null);
   const root = useRef<Group>(null);
   const torso = useRef<Group>(null);
+  const head = useRef<Group>(null);
   const leftArm = useRef<Group>(null);
   const rightArm = useRef<Group>(null);
   const eyes = useRef<Group>(null);
+  const seatedLegs = useRef<Group>(null);
+  const standingLegs = useRef<Group>(null);
+  const leftLeg = useRef<Group>(null);
+  const rightLeg = useRef<Group>(null);
+  const puff = useRef<Mesh>(null);
+  const cup = useRef<Mesh>(null);
+  /** The errand being run and when it was adopted. A new plan waits until the agent is back in its chair. */
+  const running = useRef<{ plan: ErrandPlan; since: number } | null>(null);
   const pose = POSES[look.pose];
   const still = look.motion === 'none';
+  const seat = seatOf(slot);
 
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime + phase;
-    const [r, body, left, right, e] = [root.current, torso.current, leftArm.current, rightArm.current, eyes.current];
-    if (!r || !body || !left || !right) return;
+    const now = clock.elapsedTime;
+    const t = now + phase;
+    const parts = [body.current, root.current, torso.current, head.current, leftArm.current, rightArm.current] as const;
+    const [b, r, chest, h, left, right] = parts;
+    if (!b || !r || !chest || !h || !left || !right) return;
+
+    // Errands: none means sit down now (busy, or motion reduced); a new plan starts from the chair.
+    if (!errand) running.current = null;
+    const frame = running.current ? errandAt(running.current.plan, now - running.current.since) : null;
+    if (errand && !frame && running.current?.plan !== errand) {
+      running.current = { plan: errand, since: now };
+    }
+    const standing = frame !== null;
+    if (seatedLegs.current) seatedLegs.current.visible = !standing;
+    if (standingLegs.current) standingLegs.current.visible = standing;
+    if (cup.current) cup.current.visible = frame?.kind === 'coffee' && frame.stage !== 'out';
+
+    if (frame) {
+      b.position.set(frame.position.x, 0, frame.position.z);
+      b.rotation.y = frame.yaw;
+      r.position.y = STAND_LIFT;
+      const arms = errandArms(frame, t);
+      chest.rotation.set(0, 0, arms.sway);
+      chest.scale.set(1, 1, 1);
+      h.rotation.x = arms.head;
+      left.rotation.set(arms.left, 0, -arms.armZ);
+      right.rotation.set(arms.right, 0, arms.armZ);
+      const stride = frame.stage === 'there' ? 0 : Math.sin(t * 8) * 0.5;
+      if (leftLeg.current) leftLeg.current.rotation.x = stride;
+      if (rightLeg.current) rightLeg.current.rotation.x = -stride;
+      if (puff.current) puff.current.visible = false;
+      if (eyes.current) eyes.current.scale.y = (t * 0.37) % 1 < 0.04 ? 0.15 : 1;
+      return;
+    }
+
+    b.position.set(seat.x, 0, seat.z);
+    b.rotation.y = 0;
     r.position.y = look.motion === 'bounce' ? Math.abs(Math.sin(t * 5)) * 0.1 : 0;
     // Breathing and a gentle sway, unless motion is reduced.
     const breathe = still ? 0 : Math.sin(t * 1.6) * 0.015;
-    body.scale.set(1, 1 + breathe, 1);
-    body.rotation.z = look.motion === 'sway' ? Math.sin(t * 0.9) * 0.05 : 0;
+    // A blocked agent sighs: shoulders up on the breath in, a deeper slump on the way out.
+    const sigh = look.motion === 'sigh' ? sighAmount(t) : 0;
+    chest.scale.set(1, 1 + breathe + sigh * 0.06, 1);
+    chest.rotation.set(pose.lean + sigh * 0.22, 0, look.motion === 'sway' ? Math.sin(t * 0.9) * 0.05 : 0);
+    h.rotation.x = pose.head + sigh * 0.4;
     // Typing comes in bursts, hands out of step.
-    const burst = Math.sin(t * 0.8) + Math.sin(t * 2.1) * 0.6 > -0.35;
-    const tap = look.motion === 'typing' && burst ? Math.sin(t * 19) * 0.09 : 0;
-    const tap2 = look.motion === 'typing' && burst ? Math.sin(t * 19 + 2.4) * 0.09 : 0;
-    left.rotation.x = pose.armX + tap;
-    right.rotation.x = pose.armX + tap2;
+    const burst = look.motion === 'typing' && typingBurst(t);
+    left.rotation.set(pose.armX + (burst ? Math.sin(t * 19) * 0.09 : 0), 0, -pose.armZ);
+    right.rotation.set(pose.armX + (burst ? Math.sin(t * 19 + 2.4) * 0.09 : 0), 0, pose.armZ);
+    if (puff.current) {
+      // The sigh's breath out: a little cloud drifts from the mouth and fades by shrinking.
+      const into = ((t % SIGH_EVERY) + SIGH_EVERY) % SIGH_EVERY / SIGH_LENGTH;
+      const out = (into - 0.5) * 2;
+      const show = look.motion === 'sigh' && out > 0 && out < 1;
+      puff.current.visible = show;
+      if (show) {
+        puff.current.position.set(0, -0.1 - out * 0.08, -0.3 - out * 0.25);
+        puff.current.scale.setScalar(0.07 + Math.sin(out * Math.PI) * 0.07);
+      }
+    }
     // Blink every few seconds.
-    if (e) e.scale.y = !still && (t * 0.37) % 1 < 0.04 ? 0.15 : 1;
+    if (eyes.current) eyes.current.scale.y = !still && (t * 0.37) % 1 < 0.04 ? 0.15 : 1;
   });
 
   const shirtMat = toon(shirt);
@@ -247,20 +335,32 @@ export function Character({ agentId, name, slot, accessory, shirt, hair, accent,
 
   return (
     <group
+      ref={body}
       name={`character:${agentId}`}
       userData={{ agentId, name, pose: look.pose }}
-      position={[slot.x, 0, slot.z + 0.75]}
+      position={[seat.x, 0, seat.z]}
       // Clicking the person opens their desk.
       {...interactProps({ id: `desk:${agentId}`, label: `${name}'s desk` })}
     >
       <group ref={root}>
         {/* Legs: thighs on the seat, shins down to the floor, little shoes. */}
-        <Solid geometry="capsule" material={MATERIALS.trousers} position={[-0.1, hipY + 0.02, -0.17]} scale={[0.13, 0.18, 0.13]} rotation={[Math.PI / 2, 0, 0]} />
-        <Solid geometry="capsule" material={MATERIALS.trousers} position={[0.1, hipY + 0.02, -0.17]} scale={[0.13, 0.18, 0.13]} rotation={[Math.PI / 2, 0, 0]} />
-        <Solid geometry="capsule" material={MATERIALS.trousers} position={[-0.1, 0.27, -0.36]} scale={[0.12, 0.23, 0.12]} />
-        <Solid geometry="capsule" material={MATERIALS.trousers} position={[0.1, 0.27, -0.36]} scale={[0.12, 0.23, 0.12]} />
-        <Solid geometry="sphere" material={MATERIALS.bezel} position={[-0.1, 0.05, -0.4]} scale={[0.12, 0.09, 0.18]} />
-        <Solid geometry="sphere" material={MATERIALS.bezel} position={[0.1, 0.05, -0.4]} scale={[0.12, 0.09, 0.18]} />
+        <group ref={seatedLegs}>
+          <Solid geometry="capsule" material={MATERIALS.trousers} position={[-0.1, hipY + 0.02, -0.17]} scale={[0.13, 0.18, 0.13]} rotation={[Math.PI / 2, 0, 0]} />
+          <Solid geometry="capsule" material={MATERIALS.trousers} position={[0.1, hipY + 0.02, -0.17]} scale={[0.13, 0.18, 0.13]} rotation={[Math.PI / 2, 0, 0]} />
+          <Solid geometry="capsule" material={MATERIALS.trousers} position={[-0.1, 0.27, -0.36]} scale={[0.12, 0.23, 0.12]} />
+          <Solid geometry="capsule" material={MATERIALS.trousers} position={[0.1, 0.27, -0.36]} scale={[0.12, 0.23, 0.12]} />
+          <Solid geometry="sphere" material={MATERIALS.bezel} position={[-0.1, 0.05, -0.4]} scale={[0.12, 0.09, 0.18]} />
+          <Solid geometry="sphere" material={MATERIALS.bezel} position={[0.1, 0.05, -0.4]} scale={[0.12, 0.09, 0.18]} />
+        </group>
+        {/* Standing legs swing from the hips while walking. */}
+        <group ref={standingLegs} visible={false}>
+          {([-0.1, 0.1] as const).map((x, i) => (
+            <group key={x} ref={i === 0 ? leftLeg : rightLeg} position={[x, hipY, 0]}>
+              <Solid geometry="capsule" material={MATERIALS.trousers} position={[0, -0.29, 0]} scale={[0.12, 0.3, 0.12]} />
+              <Solid geometry="sphere" material={MATERIALS.bezel} position={[0, -hipY - STAND_LIFT + 0.05, -0.05]} scale={[0.12, 0.09, 0.18]} />
+            </group>
+          ))}
+        </group>
 
         <group ref={torso} position={[0, hipY, 0]} rotation={[pose.lean, 0, 0]}>
           <Solid geometry="capsule" material={shirtMat} position={[0, 0.27, 0]} scale={[0.42, 0.25, 0.34]} />
@@ -272,13 +372,15 @@ export function Character({ agentId, name, slot, accessory, shirt, hair, accent,
           <group ref={rightArm} position={[0.23, 0.45, 0]} rotation={[pose.armX, 0, pose.armZ]}>
             <Solid geometry="capsule" material={shirtMat} position={[0, -0.17, 0]} scale={[0.1, 0.17, 0.1]} />
             <Solid geometry="sphere" material={MATERIALS.skin} position={[0, -0.36, 0]} scale={[0.1, 0.1, 0.1]} />
+            <mesh ref={cup} geometry={GEOMETRIES.cylinder} material={CUP_MATERIAL} position={[0, -0.42, -0.06]} scale={[0.09, 0.11, 0.09]} visible={false} />
           </group>
-          <group position={[0, 0.78, 0]} rotation={[pose.head, 0, 0]}>
+          <group ref={head} position={[0, 0.78, 0]} rotation={[pose.head, 0, 0]}>
             <Solid geometry="sphere" material={MATERIALS.skin} scale={[0.4, 0.38, 0.38]} />
             {/* Hair: a cap over the back and top of the head. */}
             <Solid geometry="sphere" material={hairMat} position={[0, 0.06, 0.04]} scale={[0.42, 0.34, 0.38]} />
             <Face pose={look.pose} eyes={eyes} />
             <AccessoryMesh accessory={accessory} hair={hair} />
+            <mesh ref={puff} geometry={GEOMETRIES.blob} material={PUFF_MATERIAL} visible={false} />
           </group>
         </group>
       </group>

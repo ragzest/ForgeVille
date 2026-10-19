@@ -5,12 +5,14 @@ import { useWorkflow } from '../store/context.ts';
 import { interactionStore } from '../store/interaction.ts';
 import { navigationStore, useNavigation } from '../store/navigation.ts';
 import { floorById, floorSnapshot, floorTitle, occupantOf } from './building.ts';
+import { floorSky } from './dayCycle.ts';
 import { Characters } from './characters/Characters.tsx';
 import { characterModels } from './characters/models.ts';
 import { floorDesks } from './deskViews.ts';
 import { Furniture } from './Furniture.tsx';
 import { interactionTargets } from './interaction.ts';
 import { lockPointer } from './interactable.ts';
+import { LiveSkyProvider } from './LiveSkyProvider.tsx';
 import { PLAYER_SPAWN, VACANT_FLOOR_LANDMARKS, deskAssignments } from './layout.ts';
 import { Lights, Outside } from './Outside.tsx';
 import { EYE_HEIGHT } from './player/movement.ts';
@@ -40,6 +42,9 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
   const floor = floorById(floorId);
   const project = occupantOf(snapshot, floorId);
   const vacant = project === null;
+  const followClock = useNavigation((s) => s.followClock);
+  const clock = snapshot.clock.now;
+  const sky = useMemo(() => floorSky(floor.theme, followClock, clock), [floor, followClock, clock]);
 
   const scene = useMemo(() => {
     // Everything on this floor reads the floor's slice of the snapshot.
@@ -97,15 +102,17 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       }}
       aria-label={`3D office, ${floorTitle(floor)}`}
     >
-      <FloorSceneProvider floor={floor} interactive={!vacant} reducedMotion={reducedMotion}>
-        <OutlineSizer />
-        <Lights />
-        <Outside />
-        <RoomShell />
-        <Furniture desks={scene.desks} plaque={scene.plaque} board={board} qa={scene.qa} status={scene.status} />
-        <Characters characters={scene.characters} />
-        <PlayerRig targets={scene.targets} />
-        <SceneAudit />
+      <FloorSceneProvider floor={floor} interactive={!vacant} reducedMotion={reducedMotion} sky={sky}>
+        <LiveSkyProvider>
+          <OutlineSizer />
+          <Lights />
+          <Outside />
+          <RoomShell />
+          <Furniture desks={scene.desks} plaque={scene.plaque} board={board} qa={scene.qa} status={scene.status} />
+          <Characters characters={scene.characters} />
+          <PlayerRig targets={scene.targets} />
+          <SceneAudit />
+        </LiveSkyProvider>
       </FloorSceneProvider>
     </Canvas>
   );

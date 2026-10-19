@@ -52,7 +52,7 @@ Starts after E09. It adds delight on top of a complete floor and never changes w
 | --- | --- | --- | --- |
 | 10 | [E10](epics/E10-living-building.md) | Living building | in-progress |
 | 10.1 | [S10-01](stories/S10-01-multi-project-floors.md) | Multi-project floors | done |
-| 10.2 | [S10-02](stories/S10-02-day-and-ambient-life.md) | Time of day and ambient life | todo |
+| 10.2 | [S10-02](stories/S10-02-day-and-ambient-life.md) | Time of day and ambient life | done |
 | 10.3 | [S10-03](stories/S10-03-quality-tiers.md) | Quality tiers and screen glow | todo |
 
 ## Milestone 1 — not started

@@ -48,3 +48,45 @@ describe('characterModels', () => {
     for (const m of characterModels(buildScenario('successful-merge'), true)) expect(m.look.motion).toBe('none');
   });
 });
+
+describe('ambient life', () => {
+  it('gives idle agents an errand and keeps everyone else at their desk', () => {
+    const snapshot = buildScenario('successful-merge');
+    const models = characterModels(snapshot, false);
+    const fern = models.find((m) => m.name === 'Fern');
+    expect(fern?.look.pose).toBe('leaning-back');
+    expect(fern?.errand).not.toBeNull();
+    for (const m of models) {
+      if (m.look.pose !== 'leaning-back') expect(m.errand, m.name).toBeNull();
+    }
+    expect(models.find((m) => m.name === 'Ada')?.errand).toBeNull();
+  });
+
+  it('seeds errands from the scenario clock, so the same snapshot plans the same errands', () => {
+    const snapshot = buildScenario('successful-merge');
+    expect(characterModels(snapshot, false).map((m) => m.errand)).toEqual(characterModels(snapshot, false).map((m) => m.errand));
+  });
+
+  it("plays confetti at the merge author's desk only", () => {
+    const models = characterModels(buildScenario('successful-merge'), false);
+    expect(models.find((m) => m.name === 'Ada')?.confetti).toMatch(/.+/);
+    for (const m of models) if (m.name !== 'Ada') expect(m.confetti, m.name).toBeNull();
+    expect(characterModels(buildScenario('agent-blocked'), false).every((m) => m.confetti === null)).toBe(true);
+  });
+
+  it('turns errands, confetti, and sighs off with reduced motion', () => {
+    for (const id of ['successful-merge', 'agent-blocked'] as const) {
+      for (const m of characterModels(buildScenario(id), true)) {
+        expect(m.errand).toBeNull();
+        expect(m.confetti).toBeNull();
+        expect(m.look.motion).toBe('none');
+      }
+    }
+  });
+
+  it('makes blocked agents sigh and working agents type', () => {
+    const blocked = byName(characterModels(buildScenario('agent-blocked'), false));
+    expect(blocked.Chen?.motion).toBe('sigh');
+    expect(blocked.Bruno?.motion).toBe('typing');
+  });
+});

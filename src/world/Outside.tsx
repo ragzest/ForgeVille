@@ -1,14 +1,36 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { BackSide, BufferGeometry, Color, Float32BufferAttribute, PointsMaterial, ShaderMaterial, Vector3, type Group } from 'three';
+import {
+  AdditiveBlending,
+  BackSide,
+  BufferGeometry,
+  Color,
+  DoubleSide,
+  Float32BufferAttribute,
+  Fog,
+  MeshBasicMaterial,
+  PointsMaterial,
+  ShaderMaterial,
+  Vector3,
+  type AmbientLight,
+  type DirectionalLight,
+  type Group,
+  type HemisphereLight,
+  type IUniform,
+  type Mesh,
+} from 'three';
 import { STOREY_HEIGHT } from './building.ts';
+import { useLiveSky } from './liveSky.ts';
 import { GEOMETRIES, toon } from './materials.ts';
 import { useFloorScene } from './floorScene.ts';
+import { patchTriangles, sunPatches } from './sunlight.ts';
 
 /**
  * Everything beyond the windows: a gradient sky with a cartoon sun or moon,
  * stars at night, drifting clouds, the ground far below upper floors, trees,
  * and a ring of city blocks. Deterministic, so every load looks the same.
+ * Sky, fog, and lights follow the live sky (`liveSky.ts`), which eases
+ * between moods when the clock-driven sky changes.
  */
 
 const hash = (n: number) => {
@@ -16,9 +38,11 @@ const hash = (n: number) => {
   return x - Math.floor(x);
 };
 
+type SkyUniform = 'zenith' | 'horizon' | 'sunColor' | 'sunDir' | 'sunSize';
+
 function SkyDome() {
-  const { floor } = useFloorScene();
-  const sky = floor.theme.sky;
+  const { sky } = useFloorScene();
+  const live = useLiveSky();
   const material = useMemo(
     () =>
       new ShaderMaterial({
@@ -26,11 +50,11 @@ function SkyDome() {
         depthWrite: false,
         fog: false,
         uniforms: {
-          zenith: { value: new Color(sky.zenith) },
-          horizon: { value: new Color(sky.horizon) },
-          sunColor: { value: new Color(sky.sun) },
-          sunDir: { value: new Vector3(...sky.sunPosition).normalize() },
-          sunSize: { value: sky.stars ? 0.9994 : 0.9988 },
+          zenith: { value: new Color() },
+          horizon: { value: new Color() },
+          sunColor: { value: new Color() },
+          sunDir: { value: new Vector3(0, 1, 0) },
+          sunSize: { value: 0.9988 },
         },
         vertexShader: /* glsl */ `
           varying vec3 vDir;
@@ -53,15 +77,27 @@ function SkyDome() {
           }
         `,
       }),
-    [sky],
+    [],
   );
+  // The sky eases between moods, so the uniforms follow the live sky every frame.
+  const dome = useRef<Mesh>(null);
+  useFrame(() => {
+    const shader = dome.current?.material;
+    if (!(shader instanceof ShaderMaterial)) return;
+    const u = shader.uniforms as Record<SkyUniform, IUniform>;
+    (u.zenith.value as Color).copy(live.zenith);
+    (u.horizon.value as Color).copy(live.horizon);
+    (u.sunColor.value as Color).copy(live.sun);
+    (u.sunDir.value as Vector3).copy(live.sunDir);
+    u.sunSize.value = sky.stars ? 0.9994 : 0.9988;
+  });
   useEffect(
     () => () => {
       material.dispose();
     },
     [material],
   );
-  return <mesh geometry={GEOMETRIES.sphere} material={material} scale={400} renderOrder={-1} />;
+  return <mesh ref={dome} geometry={GEOMETRIES.sphere} material={material} scale={400} renderOrder={-1} />;
 }
 
 function Stars() {
@@ -117,11 +153,26 @@ function Clouds({ drift }: { drift: boolean }) {
 }
 
 function Ground({ y }: { y: number }) {
-  const { materials, floor } = useFloorScene();
+  const { floor } = useFloorScene();
+  const live = useLiveSky();
   const road = useMemo(() => toon(new Color(floor.theme.scene.ground).offsetHSL(0, -0.25, -0.12).getStyle()), [floor]);
+  // The ground is unlit, so it dims with the sky by hand: its own material, shaded every frame.
+  const painted = useMemo(() => new Color(floor.theme.scene.ground), [floor]);
+  const ground = useMemo(() => new MeshBasicMaterial({ color: painted }), [painted]);
+  const mesh = useRef<Mesh>(null);
+  useFrame(() => {
+    const m = mesh.current?.material;
+    if (m instanceof MeshBasicMaterial) m.color.copy(painted).multiplyScalar(live.outdoorShade);
+  });
+  useEffect(
+    () => () => {
+      ground.dispose();
+    },
+    [ground],
+  );
   return (
     <group position-y={y}>
-      <mesh geometry={GEOMETRIES.plane} material={materials.ground} rotation-x={-Math.PI / 2} scale={[600, 600, 1]} />
+      <mesh ref={mesh} geometry={GEOMETRIES.plane} material={ground} rotation-x={-Math.PI / 2} scale={[600, 600, 1]} />
       {/* A road loop around the block. */}
       {[-18, 18].map((z) => (
         <mesh key={`h${String(z)}`} geometry={GEOMETRIES.plane} material={road} rotation-x={-Math.PI / 2} position={[0, 0.02, z]} scale={[200, 5, 1]} />
@@ -184,12 +235,19 @@ function City({ y }: { y: number }) {
   );
 }
 
-/** Applies the floor's exposure and fog to the renderer. */
+
+/** Applies the live sky's exposure, fog, and background to the renderer. */
 function Atmosphere() {
-  const { floor } = useFloorScene();
-  const sky = floor.theme.sky;
-  useFrame(({ gl }) => {
-    if (gl.toneMappingExposure !== sky.exposure) gl.toneMappingExposure = sky.exposure;
+  const { sky } = useFloorScene();
+  const live = useLiveSky();
+  useFrame(({ gl, scene }) => {
+    if (gl.toneMappingExposure !== live.exposure) gl.toneMappingExposure = live.exposure;
+    if (scene.background instanceof Color) scene.background.copy(live.horizon);
+    if (scene.fog instanceof Fog) {
+      scene.fog.color.copy(live.fog);
+      scene.fog.near = live.fogNear;
+      scene.fog.far = live.fogFar;
+    }
   });
   return (
     <>
@@ -199,15 +257,63 @@ function Atmosphere() {
   );
 }
 
+const WARM_WHITE = new Color('#fff3d6');
+
+/**
+ * Fake sunlight on the floor under each sunlit window: additive quads cast
+ * from the window corners along the sun, with no extra light. Rebuilt only
+ * when the sun has moved; fades with the sky's `sunPatch` strength.
+ */
+function SunlightPatches() {
+  const live = useLiveSky();
+  const { geometry, material } = useMemo(() => {
+    const g = new BufferGeometry();
+    g.setAttribute('position', new Float32BufferAttribute([], 3));
+    const m = new MeshBasicMaterial({
+      color: WARM_WHITE,
+      transparent: true,
+      opacity: 0,
+      blending: AdditiveBlending,
+      depthWrite: false,
+      side: DoubleSide,
+      toneMapped: false,
+    });
+    return { geometry: g, material: m };
+  }, []);
+  const mesh = useRef<Mesh>(null);
+  const castFrom = useRef(new Vector3(0, 0, 0));
+  useFrame(() => {
+    const m = mesh.current;
+    if (!m || !(m.material instanceof MeshBasicMaterial)) return;
+    m.material.color.copy(live.sun).lerp(WARM_WHITE, 0.4);
+    m.material.opacity = live.sunPatch;
+    m.visible = live.sunPatch > 0.01;
+    if (castFrom.current.distanceToSquared(live.sunDir) < 1e-6) return;
+    castFrom.current.copy(live.sunDir);
+    const { x, y, z } = live.sunDir;
+    m.geometry.setAttribute('position', new Float32BufferAttribute(patchTriangles(sunPatches([x, y, z]), 0.013), 3));
+    m.geometry.computeBoundingSphere();
+  });
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      material.dispose();
+    },
+    [geometry, material],
+  );
+  return <mesh ref={mesh} name="sunlight" geometry={geometry} material={material} renderOrder={1} visible={false} />;
+}
+
 export function Outside() {
-  const { floor, reducedMotion } = useFloorScene();
+  const { floor, sky, reducedMotion } = useFloorScene();
   // Upper floors look down on the street.
   const groundY = -0.1 - (floor.level - 1) * STOREY_HEIGHT;
   return (
     <group name="outside">
       <Atmosphere />
       <SkyDome />
-      {floor.theme.sky.stars ? <Stars /> : <Clouds drift={!reducedMotion} />}
+      {sky.stars ? <Stars /> : <Clouds drift={!reducedMotion} />}
+      <SunlightPatches />
       <Ground y={groundY} />
       <Trees y={groundY} />
       <City y={groundY} />
@@ -215,15 +321,32 @@ export function Outside() {
   );
 }
 
-/** Sun (or moon), sky fill, and the floor's lamps. */
+/** Sun (or moon) and sky fill, following the live sky. */
 export function Lights() {
-  const { floor } = useFloorScene();
-  const sky = floor.theme.sky;
+  const { sky } = useFloorScene();
+  const live = useLiveSky();
+  const hemi = useRef<HemisphereLight>(null);
+  const ambient = useRef<AmbientLight>(null);
+  const sun = useRef<DirectionalLight>(null);
+  useFrame(() => {
+    if (hemi.current) {
+      hemi.current.color.copy(live.hemiSky);
+      hemi.current.groundColor.copy(live.hemiGround);
+      hemi.current.intensity = live.hemiIntensity;
+    }
+    if (ambient.current) ambient.current.intensity = live.ambient;
+    if (sun.current) {
+      sun.current.position.copy(live.sunDir).multiplyScalar(live.sunDistance);
+      sun.current.color.copy(live.sun);
+      sun.current.intensity = live.sunIntensity;
+    }
+  });
   return (
     <>
-      <hemisphereLight args={[sky.hemiSky, sky.hemiGround, sky.hemiIntensity]} />
-      <ambientLight intensity={sky.ambient} />
+      <hemisphereLight ref={hemi} args={[sky.hemiSky, sky.hemiGround, sky.hemiIntensity]} />
+      <ambientLight ref={ambient} intensity={sky.ambient} />
       <directionalLight
+        ref={sun}
         position={[...sky.sunPosition]}
         intensity={sky.sunIntensity}
         color={sky.sun}

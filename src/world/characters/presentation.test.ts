@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AgentPresence } from '../../domain/index.ts';
 import { AGENTS } from '../../services/mock/seed.ts';
-import { accessoryFor, presenceLook } from './presentation.ts';
+import { SIGH_EVERY, SIGH_LENGTH, accessoryFor, presenceLook, sighAmount, typingBurst } from './presentation.ts';
 
 const ALL: AgentPresence[] = ['working', 'idle', 'blocked', 'awaiting_review', 'reviewing'];
 const calm = { celebrating: false, reducedMotion: false };
@@ -11,7 +11,7 @@ describe('presenceLook', () => {
     expect(Object.fromEntries(ALL.map((p) => [p, presenceLook(p, calm)]))).toEqual({
       working: { pose: 'typing', mark: 'none', tone: 'none', label: '', motion: 'typing' },
       idle: { pose: 'leaning-back', mark: 'none', tone: 'none', label: '', motion: 'sway' },
-      blocked: { pose: 'slumped', mark: 'stop-sign', tone: 'danger', label: 'Blocked', motion: 'none' },
+      blocked: { pose: 'slumped', mark: 'stop-sign', tone: 'danger', label: 'Blocked', motion: 'sigh' },
       awaiting_review: { pose: 'arms-crossed', mark: 'hourglass', tone: 'amber', label: 'Awaiting review', motion: 'none' },
       reviewing: { pose: 'reading', mark: 'magnifier', tone: 'review', label: 'Reviewing', motion: 'none' },
     });
@@ -59,5 +59,24 @@ describe('accessoryFor', () => {
 
   it('falls back by index for unknown avatars', () => {
     expect(accessoryFor('dragon', 0)).not.toBe(accessoryFor('dragon', 1));
+  });
+});
+
+describe('motion rhythms', () => {
+  it('types in bursts with pauses between them', () => {
+    const samples = Array.from({ length: 400 }, (_, i) => typingBurst(i * 0.05));
+    expect(samples.filter(Boolean).length).toBeGreaterThan(200);
+    expect(samples.some((on) => !on)).toBe(true);
+  });
+
+  it('sighs now and then, and rests in between', () => {
+    expect(sighAmount(0)).toBe(0);
+    expect(sighAmount(SIGH_LENGTH / 2)).toBeCloseTo(1);
+    expect(sighAmount(SIGH_LENGTH + 0.5)).toBe(0);
+    expect(sighAmount(SIGH_EVERY + SIGH_LENGTH / 2)).toBeCloseTo(1);
+    for (let t = 0; t < 20; t += 0.1) {
+      expect(sighAmount(t)).toBeGreaterThanOrEqual(0);
+      expect(sighAmount(t)).toBeLessThanOrEqual(1);
+    }
   });
 });
