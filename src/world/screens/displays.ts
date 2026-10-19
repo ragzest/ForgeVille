@@ -8,7 +8,7 @@ import {
 } from '../../domain/index.ts';
 import { MONO_FONT, UI_FONT } from '../../ui/fonts.ts';
 import { COLORS } from '../../ui/tokens.ts';
-import { COLUMN_NOTE, WALL_NOTES, type BoardColumn } from './board.ts';
+import { COLUMN_NOTE, wallNotes, type BoardColumn } from './board.ts';
 
 /**
  * In-world displays: the Kanban whiteboard, the QA screen, and the project
@@ -116,7 +116,8 @@ function rounded(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
 }
 
 /** Whiteboard surface: column chips along the top, sticky notes below. Sized for a 4.2 × 1.5 m board. */
-export function paintBoard(columns: readonly BoardColumn[], heading: string): CanvasTexture | null {
+/** `selected` is outlined, so the wall marks the same card as the overlay. */
+export function paintBoard(columns: readonly BoardColumn[], heading: string, selected: string | null = null): CanvasTexture | null {
   const made = surface(1680, 600);
   if (!made) return null;
   const [canvas, ctx] = made;
@@ -157,12 +158,17 @@ export function paintBoard(columns: readonly BoardColumn[], heading: string): Ca
       ctx.fillText('Empty', x + lane / 2, top + 100);
       ctx.textAlign = 'left';
     }
-    col.cards.slice(0, WALL_NOTES).forEach((card, k) => {
+    const { notes, more } = wallNotes(col, selected);
+    notes.forEach(({ card, selected: isSelected }, k) => {
       const y = top + 62 + k * 112;
       const tilt = ((k + i) % 3 - 1) * 0.02;
       ctx.save();
       ctx.translate(x + lane / 2, y + 50);
       ctx.rotate(tilt);
+      if (isSelected) {
+        // A thick ember ring around the selected note.
+        rounded(ctx, -lane / 2 + 6, -56, lane - 12, 114, 14, COLORS.ember, COLORS.ink);
+      }
       rounded(ctx, -lane / 2 + 14, -48, lane - 28, 98, 8, colors.note, COLORS.ink);
       ctx.fillStyle = COLORS.ink;
       ctx.font = `700 22px ${MONO_FONT}`;
@@ -174,10 +180,10 @@ export function paintBoard(columns: readonly BoardColumn[], heading: string): Ca
       ctx.fillText(fit(ctx, card.assignee, lane - 56), -lane / 2 + 26, 32);
       ctx.restore();
     });
-    if (col.cards.length > WALL_NOTES) {
+    if (more > 0) {
       ctx.fillStyle = COLORS.inkSoft;
       ctx.font = `600 18px ${UI_FONT}`;
-      ctx.fillText(`+${String(col.cards.length - WALL_NOTES)} more`, x + 18, canvas.height - 18);
+      ctx.fillText(`+${String(more)} more`, x + 18, canvas.height - 18);
     }
   });
   return done(canvas);

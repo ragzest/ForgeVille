@@ -65,6 +65,13 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
     };
   }, [snapshot, project, vacant, floor, floorId, reducedMotion]);
 
+  // The selected card is outlined on the wall too; only the board repaints when it changes.
+  const selectedTaskId = useNavigation((s) => s.selectedTaskId);
+  const board = useMemo(
+    () => ({ ...scene.board, selected: selectedTaskId, key: `${scene.board.key}|${selectedTaskId ?? ''}` }),
+    [scene.board, selectedTaskId],
+  );
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   return (
@@ -92,7 +99,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
         <Lights />
         <Outside />
         <RoomShell />
-        <Furniture desks={scene.desks} plaque={scene.plaque} board={scene.board} qa={scene.qa} status={scene.status} />
+        <Furniture desks={scene.desks} plaque={scene.plaque} board={board} qa={scene.qa} status={scene.status} />
         <Characters characters={scene.characters} />
         <PlayerRig targets={scene.targets} />
       </FloorSceneProvider>

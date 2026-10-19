@@ -61,3 +61,27 @@ test('the board overlay stacks its columns on a phone without sideways scroll', 
   await board.getByRole('button', { name: 'Close panel' }).click();
   await expect(board).toBeHidden();
 });
+
+test('a legal move updates the board and the roster; an illegal one shows the reason', async ({ page }) => {
+  await ready(page);
+  await toolbar(page).getByRole('button', { name: '2D view' }).click();
+  const ada = page.getByRole('region', { name: 'Team' }).getByRole('listitem').filter({ hasText: 'Ada' });
+  await expect(ada).toContainText('Working');
+
+  await page.getByRole('button', { name: 'Open board' }).click();
+  const board = page.getByRole('dialog', { name: 'Kanban board' });
+  await board.getByRole('button', { name: /LN-2/ }).click();
+  const detail = board.getByRole('region', { name: /^LN-2 · / });
+  await expect(detail).toContainText('Depends on');
+  await expect(detail).toContainText('LN-1');
+
+  await detail.getByRole('button', { name: 'Move to In Review' }).click();
+  await expect(detail.getByRole('status')).toContainText('LN-2 moved from In Progress to In Review.');
+  await expect(board.getByRole('region', { name: /^In Review ·/ }).getByRole('button', { name: /LN-2/ })).toBeVisible();
+  await expect(ada).toContainText('Awaiting review');
+
+  await detail.getByText('Try a move the rules refuse').click();
+  await detail.getByRole('button', { name: 'Try Backlog' }).click();
+  await expect(detail.getByRole('alert')).toContainText('LN-2 is In Review; it cannot move to Backlog.');
+  await expect(board.getByRole('region', { name: /^In Review ·/ }).getByRole('button', { name: /LN-2/ })).toBeVisible();
+});

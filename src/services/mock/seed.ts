@@ -57,13 +57,14 @@ export function task(
   column: Task['column'],
   assigneeId: string | null,
   priority: Task['priority'],
-  extra: Partial<Pick<Task, 'dependsOn' | 'branch' | 'pullRequestId'>> = {},
+  extra: Partial<Pick<Task, 'description' | 'dependsOn' | 'branch' | 'pullRequestId'>> = {},
 ): Task {
   return {
     id,
     projectId: PROJECT_ID,
     issueKey,
     title,
+    description: extra.description ?? '',
     column,
     blockedFrom: null,
     assigneeId,
@@ -153,24 +154,34 @@ export function seedCompany(): WorkflowSnapshot {
     agents: AGENTS,
     tasks: [
       task('task-ln-1', 'LN-1', 'Reading list data model', 'merged', 'agent-bruno', 'high', {
+        description: 'Tables and types for saved articles, so every other reading-list task has somewhere to store data.',
         branch: 'feature/reading-list-model',
         pullRequestId: 'pr-1',
       }),
       task('task-ln-2', 'LN-2', 'Add-to-list button on article cards', 'in_progress', 'agent-ada', 'high', {
+        description: 'A button on each article card that saves it to the reading list, with a filled state once saved.',
         dependsOn: ['task-ln-1'],
         branch: 'feature/add-to-list',
       }),
       task('task-ln-3', 'LN-3', 'Sync API for saved articles', 'in_progress', 'agent-bruno', 'urgent', {
+        description: 'Endpoints that sync saved articles between devices. The offline cache builds on this.',
         dependsOn: ['task-ln-1'],
         branch: 'feature/sync-api',
       }),
       task('task-ln-4', 'LN-4', 'Offline cache for saved articles', 'in_progress', 'agent-chen', 'medium', {
+        description: 'Keep saved articles readable without a connection, using the sync API as the source of truth.',
         dependsOn: ['task-ln-3'],
         branch: 'feature/offline-cache',
       }),
-      task('task-ln-5', 'LN-5', 'Reading settings screen', 'ready', 'agent-dara', 'medium'),
-      task('task-ln-6', 'LN-6', 'Onboarding copy', 'backlog', null, 'low'),
-      task('task-ln-7', 'LN-7', 'Dark mode', 'backlog', null, 'low'),
+      task('task-ln-5', 'LN-5', 'Reading settings screen', 'ready', 'agent-dara', 'medium', {
+        description: 'Font size, theme, and line spacing for the reader view.',
+      }),
+      task('task-ln-6', 'LN-6', 'Onboarding copy', 'backlog', null, 'low', {
+        description: 'Short first-run text that explains saving and syncing.',
+      }),
+      task('task-ln-7', 'LN-7', 'Dark mode', 'backlog', null, 'low', {
+        description: 'A dark theme for the whole app, following the system setting.',
+      }),
     ],
     sessions: [
       session('session-ada', 'agent-ada', 'task-ln-2', t('08:40'), [

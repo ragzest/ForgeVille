@@ -30,9 +30,9 @@ Status key: `todo` | `in-progress` | `done`
 | 5.1 | [S05-01](stories/S05-01-agent-panel.md) | Desk detail panel | done |
 | 5.2 | [S05-02](stories/S05-02-terminal.md) | Simulated terminal | done |
 | 5.3 | [S05-03](stories/S05-03-session-commands.md) | Pause, resume, interrupt | done |
-| 6 | [E06](epics/E06-board.md) | Kanban whiteboard | in-progress |
+| 6 | [E06](epics/E06-board.md) | Kanban whiteboard | done |
 | 6.1 | [S06-01](stories/S06-01-board.md) | Board from snapshot | done |
-| 6.2 | [S06-02](stories/S06-02-task-moves.md) | Inspect and simulate valid moves | todo |
+| 6.2 | [S06-02](stories/S06-02-task-moves.md) | Inspect and simulate valid moves | done |
 | 7 | [E07](epics/E07-qa-pr.md) | QA lab and pull-request theatre | todo |
 | 7.1 | [S07-01](stories/S07-01-pr-panel.md) | Pull-request detail panel | todo |
 | 7.2 | [S07-02](stories/S07-02-merge-actions.md) | Merge and request-changes actions | todo |
