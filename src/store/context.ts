@@ -10,3 +10,10 @@ export function useWorkflow<T>(selector: (state: WorkflowState) => T): T {
   if (!store) throw new Error('useWorkflow must be used inside <WorkflowProvider>.');
   return useStore(store, selector);
 }
+
+/** The shared workflow store itself, for code that acts on it outside a render (such as switching scenario). */
+export function useWorkflowStore(): WorkflowStore {
+  const store = useContext(WorkflowStoreContext);
+  if (!store) throw new Error('useWorkflowStore must be used inside <WorkflowProvider>.');
+  return store;
+}

@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { bootShell, type BootResult, type ShellStatus } from './boot.ts';
 import { browserEnvironment, type ShellEnvironment } from './environment.ts';
 import { PreferencesContext, type ShellPreferences } from './preferences.ts';
 import { InteractionPanel } from '../../features/navigation/InteractionPanel.tsx';
-import { useNavigation } from '../../store/navigation.ts';
-import { useWorkflow } from '../../store/context.ts';
+import { ScenarioNotice } from '../../features/scenario/ScenarioNotice.tsx';
+import { ScenarioSwitcher } from '../../features/scenario/ScenarioSwitcher.tsx';
+import type { ScenarioId } from '../../domain/index.ts';
+import { interactionStore } from '../../store/interaction.ts';
+import { navigationStore, useNavigation } from '../../store/navigation.ts';
+import { useWorkflow, useWorkflowStore } from '../../store/context.ts';
+import { readScenarioQuery } from '../scenarioQuery.ts';
+import { switchScenario } from '../switchScenario.ts';
 import { themeCssVars } from '../../ui/themes.ts';
 import { floorById, floorTitle, occupantOf } from '../../world/building.ts';
 import { ErrorView, FallbackView, LoadingView, OfficeView } from './ShellViews.tsx';
@@ -21,6 +27,29 @@ export function AppShell({ environment }: AppShellProps) {
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<ShellState>({ status: 'loading' });
   const [officeMounted, setOfficeMounted] = useState(false);
+  const [unknownScenario, setUnknownScenario] = useState(() => readScenarioQuery(env.search).unknown);
+
+  // The query string as last written, so a switch keeps the other parameters.
+  const search = useRef(env.search);
+  const workflow = useWorkflowStore();
+  const changeScenario = useCallback(
+    (id: ScenarioId) => {
+      setUnknownScenario(null);
+      switchScenario(id, {
+        workflow,
+        interaction: interactionStore,
+        navigation: navigationStore,
+        url: {
+          read: () => search.current,
+          write: (next) => {
+            search.current = next;
+            env.replaceSearch?.(next);
+          },
+        },
+      });
+    },
+    [workflow, env],
+  );
 
   // Boot after the loading state has painted.
   useEffect(() => {
@@ -73,10 +102,19 @@ export function AppShell({ environment }: AppShellProps) {
             {floor.theme.name}
             <span className="floor-chip-occupant">{occupant ? `${occupant} team` : 'Vacant'}</span>
           </p>
+          <ScenarioSwitcher onSwitch={changeScenario} />
           <p className="shell-tag">
             <span className="sim-tag">Simulated</span> Nothing here runs real agents.
           </p>
         </header>
+        {unknownScenario !== null && (
+          <ScenarioNotice
+            unknown={unknownScenario}
+            onDismiss={() => {
+              setUnknownScenario(null);
+            }}
+          />
+        )}
         <main className="shell-main" aria-busy={status === 'loading'}>
           {state.status === 'loading' && <LoadingView />}
           {state.status === 'error' && <ErrorView message={state.message} onRetry={retry} />}

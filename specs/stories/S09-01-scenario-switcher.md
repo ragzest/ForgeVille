@@ -1,6 +1,6 @@
 # S09-01 — Scenario switcher across all views
 
-Status: todo
+Status: done
 Epic: [E09](../epics/E09-vertical-slice.md)
 Depends on: S03-03, S05-03, S06-02, S07-02, S08-01
 

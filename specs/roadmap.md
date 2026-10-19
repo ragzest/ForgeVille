@@ -38,8 +38,8 @@ Status key: `todo` | `in-progress` | `done`
 | 7.2 | [S07-02](stories/S07-02-merge-actions.md) | Merge and request-changes actions | done |
 | 8 | [E08](epics/E08-mission-control.md) | Mission control | done |
 | 8.1 | [S08-01](stories/S08-01-mission-control.md) | Overlay metrics and event feed | done |
-| 9 | [E09](epics/E09-vertical-slice.md) | Cohesive prototype | todo |
-| 9.1 | [S09-01](stories/S09-01-scenario-switcher.md) | Scenario switcher across all views | todo |
+| 9 | [E09](epics/E09-vertical-slice.md) | Cohesive prototype | in-progress |
+| 9.1 | [S09-01](stories/S09-01-scenario-switcher.md) | Scenario switcher across all views | done |
 | 9.2 | [S09-02](stories/S09-02-polish.md) | Visual polish, reduced motion, empty states | todo |
 | 9.3 | [S09-03](stories/S09-03-e2e.md) | End-to-end walkthrough | todo |
 | 9.4 | [S09-04](stories/S09-04-readme.md) | Operator README | todo |
