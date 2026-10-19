@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { mergeEligibilityFor } from '../../domain/index.ts';
 import { COLUMN_LABELS } from '../../domain/index.ts';
 import { useInteraction } from '../../store/interaction.ts';
 import { useWorkflow } from '../../store/context.ts';
@@ -6,7 +7,6 @@ import { CHECK_STATUS, focusPullRequest } from '../../world/screens/qa.ts';
 import { clockTime } from '../desks/deskDetails.ts';
 import { REVIEW_TEXT, pullRequestDetail } from './prDetail.ts';
 
-const ACTIONS_REASON = 'Merge and request changes arrive with S07-02.';
 
 /** A status as icon and word, coloured by tone; never colour alone. */
 function Status({ icon, text, tone }: { icon: string; text: string; tone: string }) {
@@ -60,7 +60,7 @@ export function PullRequestPanel({ title }: { title: string }) {
       {!detail ? (
         <p className="panel-note">No pull requests yet. The QA lab is quiet.</p>
       ) : (
-        <PullRequestBody detail={detail} />
+        <PullRequestBody key={detail.pullRequest.id} detail={detail} />
       )}
       <p className="panel-note">
         Simulated pull request; no real repository or browser is involved. Press <kbd>Esc</kbd> to close.
@@ -69,8 +69,37 @@ export function PullRequestPanel({ title }: { title: string }) {
   );
 }
 
+type Feedback = { readonly ok: true; readonly text: string } | { readonly ok: false; readonly heading: string; readonly reasons: readonly string[] };
+
 function PullRequestBody({ detail }: { detail: NonNullable<ReturnType<typeof pullRequestDetail>> }) {
   const { pullRequest: pr, task, merge } = detail;
+  const mergePullRequest = useWorkflow((s) => s.mergePullRequest);
+  const requestChanges = useWorkflow((s) => s.requestChanges);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+
+  // Both actions always go to the port, even when the policy will refuse, so the
+  // refusal and its reasons come from the domain, never from the button.
+  const doMerge = () => {
+    const result = mergePullRequest(pr.id);
+    if (result.ok) {
+      setFeedback({ ok: true, text: result.snapshot.events.at(-1)?.message ?? 'Merged.' });
+      return;
+    }
+    const after = mergeEligibilityFor(result.snapshot, pr.id);
+    setFeedback({ ok: false, heading: 'Not merged:', reasons: after.eligible ? [result.reason] : after.reasons });
+  };
+  const doRequestChanges = (findingId?: string) => {
+    const result = requestChanges(pr.id, findingId);
+    setFeedback(
+      result.ok
+        ? { ok: true, text: result.snapshot.events.at(-1)?.message ?? 'Changes requested.' }
+        : { ok: false, heading: 'Changes not requested:', reasons: [result.reason] },
+    );
+  };
+
+  const label = `Pull request #${String(pr.number)}`;
+  const changesBlocked =
+    pr.state !== 'open' ? `${label} is ${pr.state}.` : detail.reviewStatus === 'none' ? `${label} has no review to update.` : null;
   const review = REVIEW_TEXT[detail.reviewStatus];
   const reviewTone = detail.reviewStatus === 'approved' ? 'success' : detail.reviewStatus === 'changes_requested' ? 'danger' : 'muted';
 
@@ -146,6 +175,17 @@ function PullRequestBody({ detail }: { detail: NonNullable<ReturnType<typeof pul
                 tone={f.severity === 'blocking' ? 'danger' : 'muted'}
               />{' '}
               {f.message} <span className="two-d-muted">· {f.resolved ? 'resolved' : 'open'}</span>
+              {f.severity === 'non_blocking' && changesBlocked === null && (
+                <button
+                  type="button"
+                  className="pr-finding-action"
+                  onClick={() => {
+                    doRequestChanges(f.id);
+                  }}
+                >
+                  Make blocking
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -171,7 +211,7 @@ function PullRequestBody({ detail }: { detail: NonNullable<ReturnType<typeof pul
       ) : (
         <div className="desk-feedback is-refused">
           <p className="pr-blocked-heading">Merge is blocked:</p>
-          <ul className="pr-reasons" aria-label="Merge blocked because">
+          <ul className="pr-reasons" id="pr-merge-reasons" aria-label="Merge blocked because">
             {merge.reasons.map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
@@ -179,16 +219,47 @@ function PullRequestBody({ detail }: { detail: NonNullable<ReturnType<typeof pul
         </div>
       )}
       <div className="desk-actions" role="group" aria-label="Pull-request actions">
-        <button type="button" disabled aria-describedby="pr-actions-reason">
+        <button
+          type="button"
+          className="pr-merge"
+          aria-disabled={!merge.eligible}
+          aria-describedby={merge.eligible ? undefined : 'pr-merge-reasons'}
+          onClick={doMerge}
+        >
           Merge
         </button>
-        <button type="button" disabled aria-describedby="pr-actions-reason">
+        <button
+          type="button"
+          className="is-quiet"
+          aria-disabled={changesBlocked !== null}
+          aria-describedby={changesBlocked ? 'pr-changes-reason' : undefined}
+          onClick={() => {
+            doRequestChanges();
+          }}
+        >
           Request changes
         </button>
       </div>
-      <p className="panel-note" id="pr-actions-reason">
-        {ACTIONS_REASON}
-      </p>
+      {changesBlocked && (
+        <p className="panel-note" id="pr-changes-reason">
+          Request changes: {changesBlocked}
+        </p>
+      )}
+      {feedback &&
+        (feedback.ok ? (
+          <p className="desk-feedback" role="status">
+            {feedback.text}
+          </p>
+        ) : (
+          <div className="desk-feedback is-refused" role="alert">
+            <p className="pr-blocked-heading">{feedback.heading}</p>
+            <ul className="pr-reasons">
+              {feedback.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
     </>
   );
 }

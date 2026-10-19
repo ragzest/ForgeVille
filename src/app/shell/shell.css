@@ -1331,3 +1331,22 @@ kbd {
 .pr-reasons li::before {
   content: '⛔ ';
 }
+
+/* Buttons the policy would refuse stay focusable; they look quiet and say why. */
+.desk-actions button[aria-disabled='true'] {
+  background: var(--fv-paper);
+  color: var(--fv-ink-soft);
+  border-color: var(--fv-line);
+  cursor: not-allowed;
+}
+
+.pr-finding-action {
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  border: 2px solid var(--fv-ink);
+  background: var(--fv-paper);
+  color: var(--fv-ink);
+  font: 600 0.75rem/1.4 var(--fv-font);
+  cursor: pointer;
+}

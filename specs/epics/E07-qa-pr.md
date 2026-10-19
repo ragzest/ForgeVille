@@ -1,6 +1,6 @@
 # E07 — QA lab and pull-request theatre
 
-Status: in-progress
+Status: done
 
 ## Outcome
 
