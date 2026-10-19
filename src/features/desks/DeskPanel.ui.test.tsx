@@ -78,21 +78,20 @@ describe('DeskPanel', () => {
     expect(screen.getByRole('button', { name: 'Inspect task' })).toBeDisabled();
   });
 
-  it('shows every action, with a visible reason on the disabled ones', () => {
+  it('shows every action, with a visible reason on the disabled session commands', () => {
     renderWithFixture();
     openAda();
     const actions = within(screen.getByRole('group', { name: 'Desk actions' })).getAllByRole('button');
     expect(actions.map((b) => b.textContent)).toEqual(['Inspect task', 'Open terminal', 'Pause', 'Resume', 'Interrupt']);
 
-    expect(screen.getByRole('button', { name: 'Open terminal' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Open terminal' })).toHaveAccessibleDescription('The terminal arrives with S05-02.');
+    expect(screen.getByRole('button', { name: 'Open terminal' })).toBeEnabled();
     for (const name of ['Pause', 'Resume', 'Interrupt']) {
       expect(screen.getByRole('button', { name })).toBeDisabled();
       expect(screen.getByRole('button', { name })).toHaveAccessibleDescription(
         'Pause, resume, and interrupt arrive with S05-03.',
       );
     }
-    expect(screen.getByText('The terminal arrives with S05-02.')).toBeVisible();
+    expect(screen.getByText('Pause, resume, and interrupt arrive with S05-03.')).toBeVisible();
   });
 
   it('Inspect task selects the task and shows its title and column', async () => {

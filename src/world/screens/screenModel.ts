@@ -1,4 +1,10 @@
-import { presenceInputFor, agentPresence, type AgentPresence, type WorkflowSnapshot } from '../../domain/index.ts';
+import {
+  presenceInputFor,
+  agentPresence,
+  type AgentPresence,
+  type AgentSession,
+  type WorkflowSnapshot,
+} from '../../domain/index.ts';
 import { runtimeStyle, type RuntimeStyle } from '../../ui/runtimes.ts';
 
 /**
@@ -49,8 +55,22 @@ const BANNERS: Readonly<Partial<Record<AgentPresence, ScreenBanner>>> = {
 
 const hhmm = (iso: string) => new Date(iso).toISOString().slice(11, 16);
 
+/** Every transcript line of a session, oldest first, classified for colouring. */
+export function transcriptLines(session: AgentSession | null): ScreenLine[] {
+  return (session?.transcript ?? []).map((line) => ({
+    time: hhmm(line.timestamp),
+    text: line.text,
+    kind: line.stream === 'system' ? 'system' : line.text.startsWith('$') ? 'command' : 'output',
+  }));
+}
+
+export interface ScreenModelOptions {
+  /** Keep the whole transcript instead of the newest `SCREEN_LINES` (the terminal panel). */
+  readonly fullTranscript?: boolean;
+}
+
 /** A desk monitor for one agent. Agents with no session show a screensaver. */
-export function screenModel(snapshot: WorkflowSnapshot, agentId: string): ScreenModel {
+export function screenModel(snapshot: WorkflowSnapshot, agentId: string, options: ScreenModelOptions = {}): ScreenModel {
   const agent = snapshot.agents.find((a) => a.id === agentId);
   const input = presenceInputFor(snapshot, agentId);
   const presence = agentPresence(input);
@@ -59,11 +79,8 @@ export function screenModel(snapshot: WorkflowSnapshot, agentId: string): Screen
   const handle = `${(agent?.name ?? agentId).toLowerCase()}@${project.toLowerCase()}`;
   const session = input.session;
 
-  const lines: ScreenLine[] = (session?.transcript ?? []).slice(-SCREEN_LINES).map((line) => ({
-    time: hhmm(line.timestamp),
-    text: line.text,
-    kind: line.stream === 'system' ? 'system' : line.text.startsWith('$') ? 'command' : 'output',
-  }));
+  const all = transcriptLines(session);
+  const lines = options.fullTranscript ? all : all.slice(-SCREEN_LINES);
 
   const mode: ScreenMode = session ? 'terminal' : 'screensaver';
   const banner = BANNERS[presence] ?? (session && session.state !== 'running' ? { tone: 'amber', text: `SESSION ${session.state.toUpperCase()}` } as const : null);

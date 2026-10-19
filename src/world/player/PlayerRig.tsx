@@ -56,10 +56,15 @@ export function PlayerRig({ targets }: { targets: readonly InteractionTarget[] }
     const unsubscribe = navigationStore.subscribe((nav) => {
       if (nav.view !== 'walk' && locked()) document.exitPointerLock();
     });
+    // So does opening a terminal: it reads like a text panel, not the office.
+    const unsubscribeTerminal = interactionStore.subscribe((s) => {
+      if (s.terminal && locked()) document.exitPointerLock();
+    });
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('focusin', onFocusIn);
       unsubscribe();
+      unsubscribeTerminal();
       if (locked()) document.exitPointerLock();
     };
   }, [canvas]);
@@ -78,8 +83,8 @@ export function PlayerRig({ targets }: { targets: readonly InteractionTarget[] }
     }
 
     const overview = nav.view === 'overview';
-    // Movement keys are paused in the overview; the player stays put.
-    if (!overview) next = stepPlayer(next, input, dt, colliders);
+    // Movement keys are paused in the overview and while a terminal is open; the player stays put.
+    if (!overview && !interactionStore.getState().terminal) next = stepPlayer(next, input, dt, colliders);
     pose.current = next;
     persisted.pose = next;
 

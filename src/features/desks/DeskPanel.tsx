@@ -4,9 +4,9 @@ import { useNavigation } from '../../store/navigation.ts';
 import { useWorkflow } from '../../store/context.ts';
 import { runtimeStyle } from '../../ui/runtimes.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
+import { TerminalView } from '../terminal/TerminalView.tsx';
 import { clockTime, deskDetails, deskId, timeAgo } from './deskDetails.ts';
 
-const TERMINAL_REASON = 'The terminal arrives with S05-02.';
 const SESSION_REASON = 'Pause, resume, and interrupt arrive with S05-03.';
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
@@ -19,13 +19,15 @@ const count = new Intl.NumberFormat('en-US');
 export function DeskPanel({ agentId, title }: { agentId: string; title: string }) {
   const snapshot = useWorkflow((s) => s.snapshot);
   const close = useInteraction((s) => s.close);
+  const terminal = useInteraction((s) => s.terminal);
+  const showTerminal = useInteraction((s) => s.showTerminal);
   const selectedTaskId = useNavigation((s) => s.selectedTaskId);
   const selectTask = useNavigation((s) => s.selectTask);
   const details = deskDetails(snapshot, agentId);
   const now = snapshot.clock.now;
 
   return (
-    <section className="panel desk-panel" role="dialog" aria-modal="false" aria-labelledby="interaction-panel-title">
+    <section className={terminal ? 'panel desk-panel is-terminal' : 'panel desk-panel'} role="dialog" aria-modal="false" aria-labelledby="interaction-panel-title">
       <header className="panel-header">
         <h2 id="interaction-panel-title">{title}</h2>
         <button type="button" className="panel-close" onClick={close} aria-label="Close panel">
@@ -35,6 +37,23 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
 
       {!details ? (
         <p className="panel-note">No agent has id {agentId} in this scenario.</p>
+      ) : terminal ? (
+        <>
+          <TerminalView agentId={agentId} />
+          <div className="desk-actions">
+            <button
+              type="button"
+              onClick={() => {
+                showTerminal(false);
+              }}
+            >
+              Back to desk
+            </button>
+          </div>
+          <p className="panel-note">
+            Press <kbd>Esc</kbd> to close.
+          </p>
+        </>
       ) : (
         <>
           <div className="desk-identity">
@@ -98,7 +117,12 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
             >
               Inspect task
             </button>
-            <button type="button" disabled aria-describedby="desk-terminal-reason">
+            <button
+              type="button"
+              onClick={() => {
+                showTerminal(true);
+              }}
+            >
               Open terminal
             </button>
             <button type="button" disabled aria-describedby="desk-session-reason">
@@ -111,9 +135,6 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
               Interrupt
             </button>
           </div>
-          <p className="panel-note" id="desk-terminal-reason">
-            {TERMINAL_REASON}
-          </p>
           <p className="panel-note" id="desk-session-reason">
             {SESSION_REASON}
           </p>

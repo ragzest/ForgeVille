@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import { ACESFilmicToneMapping, PCFShadowMap } from 'three';
 import { useWorkflow } from '../store/context.ts';
+import { interactionStore } from '../store/interaction.ts';
 import { navigationStore, useNavigation } from '../store/navigation.ts';
 import { floorById, floorTitle, occupantOf } from './building.ts';
 import { Characters } from './characters/Characters.tsx';
@@ -78,8 +79,9 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
       }}
       // A click on empty space locks the pointer; clicks on objects activate them instead.
       onPointerMissed={(e) => {
-        // Only in walk mode: the overview is for looking, not mouse look.
-        if (e.button === 0 && canvasRef.current && navigationStore.getState().view === 'walk') {
+        // Only in walk mode, and not over an open terminal: the overview is for looking, not mouse look.
+        const walking = navigationStore.getState().view === 'walk' && !interactionStore.getState().terminal;
+        if (e.button === 0 && canvasRef.current && walking) {
           lockPointer(canvasRef.current);
         }
       }}

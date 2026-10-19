@@ -1,6 +1,6 @@
 # S05-02 — Simulated terminal
 
-Status: todo
+Status: done
 Epic: [E05](../epics/E05-desks.md)
 Depends on: S05-01
 
