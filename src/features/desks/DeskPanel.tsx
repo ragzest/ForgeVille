@@ -166,7 +166,7 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
           </ul>
           {feedback && (
             <p className={feedback.ok ? 'desk-feedback' : 'desk-feedback is-refused'} role={feedback.ok ? 'status' : 'alert'}>
-              {feedback.ok ? feedback.text : `Not done: ${feedback.text}`}
+              <span aria-hidden="true">{feedback.ok ? '✓' : '✕'}</span> {feedback.ok ? feedback.text : `Not done: ${feedback.text}`}
             </p>
           )}
 

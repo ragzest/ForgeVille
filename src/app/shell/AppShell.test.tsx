@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -114,5 +114,53 @@ describe('AppShell', () => {
 
     expect(container.querySelector('[data-reduced-motion="true"]')).not.toBeNull();
     expect(prefersReducedMotion).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers the 2D view from the error state, and the 3D office again from there', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    canvas.behaviour = 'crash';
+    const user = userEvent.setup();
+    const { container } = render(<App environment={env()} />);
+
+    const alert = await screen.findByRole('alert');
+    expect(within(alert).getByRole('heading')).toHaveTextContent('The office hit a snag');
+    expect(alert).toHaveTextContent('Nothing is lost');
+    await user.click(within(alert).getByRole('button', { name: 'Use the 2D view' }));
+
+    expect(await screen.findByRole('heading', { name: 'Using the 2D view' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Team' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Board' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'The 3D office cannot start' })).not.toBeInTheDocument();
+
+    canvas.behaviour = 'ready';
+    await user.click(screen.getByRole('button', { name: 'Try the 3D office again' }));
+    await waitFor(() => {
+      expect(container.querySelector('[data-shell-status="ready"]')).not.toBeNull();
+    });
+  });
+
+  it('says what is happening while it loads', () => {
+    const html = renderToStaticMarkup(<App environment={env()} />);
+    expect(html).toContain('Setting out desks and painting the signs.');
+  });
+
+  it('follows the reduced-motion setting when it changes', async () => {
+    let notify: (reduce: boolean) => void = () => undefined;
+    const unsubscribe = vi.fn();
+    const watchReducedMotion = vi.fn((onChange: (reduce: boolean) => void) => {
+      notify = onChange;
+      return unsubscribe;
+    });
+    const { container, unmount } = render(<App environment={env({ watchReducedMotion })} />);
+    await screen.findByRole('region', { name: 'Office' });
+    expect(container.querySelector('[data-reduced-motion="false"]')).not.toBeNull();
+
+    act(() => {
+      notify(true);
+    });
+    expect(container.querySelector('[data-reduced-motion="true"]')).not.toBeNull();
+
+    unmount();
+    expect(unsubscribe).toHaveBeenCalled();
   });
 });

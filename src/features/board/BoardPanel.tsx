@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { useInteraction } from '../../store/interaction.ts';
 import { useNavigation } from '../../store/navigation.ts';
 import { useWorkflow } from '../../store/context.ts';
-import { COLUMN_NOTE, PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
+import { COLUMN_NOTE, EMPTY_COLUMN_COPY, PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
 import { boardFloor } from './openBoard.ts';
 import { TaskDetail } from './TaskDetail.tsx';
 
@@ -47,7 +47,7 @@ export function BoardPanel({ title }: { title: string }) {
                 {col.label} <span className="board-count">· {col.cards.length}</span>
               </h3>
               {col.cards.length === 0 ? (
-                <p className="board-empty">No tasks in {col.label}.</p>
+                <p className="board-empty">{EMPTY_COLUMN_COPY[col.column]}</p>
               ) : (
                 <ul className="board-cards">
                   {col.cards.map((card) => (

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { TASK_COLUMNS } from '../../domain/index.ts';
+import { COLUMN_LABELS, TASK_COLUMNS } from '../../domain/index.ts';
 import { minimalSnapshot } from '../../domain/fixtures/minimalSnapshot.ts';
 import { buildScenario } from '../../services/mock/scenarios.ts';
-import { COLUMN_NOTE, boardColumns, floorBoard, wallNotes } from './board.ts';
+import { COLUMN_NOTE, EMPTY_COLUMN_COPY, boardColumns, floorBoard, wallNotes } from './board.ts';
 import { boardColumns as wallColumns } from './displays.ts';
 
 describe('board view model', () => {
@@ -67,5 +67,13 @@ describe('whiteboard notes', () => {
     expect(more).toBe(2);
     expect(notes.filter((n) => n.selected).map((n) => n.card.taskId)).toEqual(['t2']);
     expect(wallNotes(col, null).notes.some((n) => n.selected)).toBe(false);
+  });
+});
+
+describe('empty column copy', () => {
+  it('names its column, so it reads on its own', () => {
+    for (const column of TASK_COLUMNS) {
+      expect(EMPTY_COLUMN_COPY[column], column).toContain(COLUMN_LABELS[column]);
+    }
   });
 });

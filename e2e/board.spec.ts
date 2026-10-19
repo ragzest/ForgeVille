@@ -32,7 +32,7 @@ test('walking to the whiteboard and pressing E opens the board overlay', async (
   const note = blocked.getByRole('button', { name: /LN-4/ });
   await expect(note).toContainText('Chen');
   await expect(note).toContainText('Blocked (from In Progress)');
-  await expect(board.getByRole('region', { name: /^QA ·/ })).toContainText('No tasks in QA.');
+  await expect(board.getByRole('region', { name: /^QA ·/ })).toContainText('Nothing in QA. The test bench is quiet.');
 
   await note.click();
   await expect(board.getByRole('region', { name: /^LN-4 · / })).toContainText('Depends on');

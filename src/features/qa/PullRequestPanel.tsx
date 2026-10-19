@@ -210,7 +210,9 @@ function PullRequestBody({ detail }: { detail: NonNullable<ReturnType<typeof pul
         </p>
       ) : (
         <div className="desk-feedback is-refused">
-          <p className="pr-blocked-heading">Merge is blocked:</p>
+          <p className="pr-blocked-heading">
+            <span aria-hidden="true">✕</span> Merge is blocked:
+          </p>
           <ul className="pr-reasons" id="pr-merge-reasons" aria-label="Merge blocked because">
             {merge.reasons.map((reason) => (
               <li key={reason}>{reason}</li>
@@ -248,11 +250,13 @@ function PullRequestBody({ detail }: { detail: NonNullable<ReturnType<typeof pul
       {feedback &&
         (feedback.ok ? (
           <p className="desk-feedback" role="status">
-            {feedback.text}
+            <span aria-hidden="true">✓</span> {feedback.text}
           </p>
         ) : (
           <div className="desk-feedback is-refused" role="alert">
-            <p className="pr-blocked-heading">{feedback.heading}</p>
+            <p className="pr-blocked-heading">
+              <span aria-hidden="true">✕</span> {feedback.heading}
+            </p>
             <ul className="pr-reasons">
               {feedback.reasons.map((reason) => (
                 <li key={reason}>{reason}</li>

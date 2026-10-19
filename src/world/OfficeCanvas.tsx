@@ -18,6 +18,7 @@ import { PlayerRig } from './player/PlayerRig.tsx';
 import { floorBoard } from './screens/board.ts';
 import { qaDisplay, statusTiles } from './screens/displays.ts';
 import { screenModel } from './screens/screenModel.ts';
+import { SceneAudit } from './SceneAudit.tsx';
 import { RoomShell } from './Shell.tsx';
 import { FloorSceneProvider, OutlineSizer } from './Solid.tsx';
 
@@ -102,6 +103,7 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
         <Furniture desks={scene.desks} plaque={scene.plaque} board={board} qa={scene.qa} status={scene.status} />
         <Characters characters={scene.characters} />
         <PlayerRig targets={scene.targets} />
+        <SceneAudit />
       </FloorSceneProvider>
     </Canvas>
   );

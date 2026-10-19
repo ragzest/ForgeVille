@@ -1,6 +1,6 @@
 # S09-02 — Visual polish, reduced motion, empty states
 
-Status: todo
+Status: done
 Epic: [E09](../epics/E09-vertical-slice.md)
 Depends on: S09-01
 

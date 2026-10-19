@@ -22,13 +22,19 @@ export const COLORS = {
   // Status. Constant across floors; always paired with an icon and text.
   success: '#2fb37a',
   successSoft: '#d4f5e4',
+  /** Success for text on paper, or a fill under white text. */
+  successDeep: '#1f7a52',
   danger: '#e5484d',
   dangerSoft: '#fde1e1',
+  /** Danger for text on paper, or a fill under white text. */
+  dangerDeep: '#c4271f',
   amber: '#f5a524',
   amberSoft: '#fff1d1',
   /** Review: distinct from success and blocked. */
   review: '#7c6cf2',
   reviewSoft: '#e8e4ff',
+  /** Review for text on paper, or a fill under white text. */
+  reviewDeep: '#5b4bd6',
 
   // Scene constants shared by every floor.
   screen: '#1b1b29',
@@ -41,6 +47,44 @@ export const COLORS = {
 } as const;
 
 export type ColorToken = keyof typeof COLORS;
+
+/**
+ * Every text-on-background pairing the panels use, as [text, background].
+ * Each must reach 4.5:1 (`tokens.test.ts`). Floor accents are checked in
+ * `themes.test.ts`, terminal colours in `terminal.test.ts`.
+ */
+export const PANEL_TEXT_PAIRS: readonly (readonly [text: string, background: string, where: string])[] = [
+  [COLORS.ink, COLORS.paper, 'body text on panels'],
+  [COLORS.ink, COLORS.cream, 'body text on the page'],
+  [COLORS.inkSoft, COLORS.paper, 'notes on panels'],
+  [COLORS.inkSoft, COLORS.cream, 'notes on the page and muted chips'],
+  [COLORS.inkSoft, COLORS.line, 'notes on dividers'],
+  [COLORS.ink, COLORS.successSoft, 'working badge, passed check'],
+  [COLORS.ink, COLORS.dangerSoft, 'refused feedback, failed check'],
+  [COLORS.dangerDeep, COLORS.dangerSoft, 'refused heading on its soft fill'],
+  [COLORS.ink, COLORS.amberSoft, 'running check'],
+  [COLORS.ink, COLORS.reviewSoft, 'review chip'],
+  [COLORS.ink, COLORS.amber, 'awaiting-review badge and banner'],
+  ['#ffffff', COLORS.dangerDeep, 'blocked badge and banner'],
+  ['#ffffff', COLORS.reviewDeep, 'reviewing badge and banner'],
+  ['#ffffff', COLORS.successDeep, 'merged banner'],
+  [COLORS.dangerDeep, COLORS.paper, 'urgent priority, failing run'],
+  [COLORS.successDeep, COLORS.paper, 'success text'],
+  [COLORS.reviewDeep, COLORS.paper, 'review text'],
+];
+
+/** WCAG 2.x contrast ratio between two `#rrggbb` colours. */
+export function contrastRatio(a: string, b: string): number {
+  const luminance = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    }) as [number, number, number];
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [hi, lo] = [luminance(a), luminance(b)].sort((p, q) => q - p) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+}
 
 /** Shirt colours for characters, assigned by desk. Bright, so people pop against any floor. */
 export const CHARACTER_COLORS = ['#e63946', '#457b9d', '#2a9d8f', '#f4a261', '#9b5de5', '#00bbf9', '#f15bb5', '#06d6a0'] as const;

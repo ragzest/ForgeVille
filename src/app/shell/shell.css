@@ -163,6 +163,27 @@ pre {
   background: var(--fv-danger-soft);
 }
 
+.shell-panel--error h2 span {
+  color: var(--fv-danger-deep);
+}
+
+.shell-panel .shell-panel-note {
+  color: var(--fv-ink-soft);
+  font-size: 0.92rem;
+}
+
+.shell-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.shell-panel button.is-quiet {
+  background: var(--fv-paper);
+  color: var(--fv-ink);
+}
+
 .shell-panel--notice {
   background: var(--fv-amber-soft);
 }
@@ -612,6 +633,12 @@ kbd {
   gap: 0.25rem 0.5rem;
 }
 
+/* Team rows line up: name and role, then the badge and the button in their own columns. */
+.two-d-list li.two-d-agent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
 .two-d-muted {
   color: var(--fv-ink-soft);
   font-size: 0.85rem;
@@ -655,7 +682,7 @@ kbd {
 }
 
 .presence--blocked {
-  background: var(--fv-danger);
+  background: var(--fv-danger-deep);
   color: #fff;
 }
 
@@ -664,7 +691,7 @@ kbd {
 }
 
 .presence--reviewing {
-  background: var(--fv-review);
+  background: var(--fv-review-deep);
   color: #fff;
 }
 
@@ -1010,10 +1037,10 @@ kbd {
   color: #fff;
 }
 
-.terminal-banner--danger { background: var(--fv-danger); }
+.terminal-banner--danger { background: var(--fv-danger-deep); }
 .terminal-banner--amber { background: var(--fv-amber); color: var(--fv-ink); }
-.terminal-banner--review { background: var(--fv-review); }
-.terminal-banner--success { background: var(--fv-success); }
+.terminal-banner--review { background: var(--fv-review-deep); }
+.terminal-banner--success { background: var(--fv-success-deep); }
 
 @media (prefers-reduced-motion: reduce) {
   .terminal-cursor.is-blinking {
@@ -1156,7 +1183,7 @@ kbd {
 }
 
 .board-priority--urgent {
-  color: var(--fv-danger);
+  color: var(--fv-danger-deep);
 }
 
 .board-detail {
@@ -1295,7 +1322,7 @@ kbd {
 }
 
 .pr-run-failure {
-  color: var(--fv-danger);
+  color: var(--fv-danger-deep);
   font-weight: 600;
 }
 

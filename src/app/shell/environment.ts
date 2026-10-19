@@ -8,6 +8,8 @@ export interface ShellEnvironment {
   detectWebGL: () => boolean;
   /** True when the user asked the OS for reduced motion. */
   prefersReducedMotion: () => boolean;
+  /** Calls back when the OS reduced-motion setting changes; returns an unsubscribe. Optional so tests can skip it. */
+  watchReducedMotion?: (onChange: (reduce: boolean) => void) => () => void;
   /** Replaces the URL's query string without adding a history entry. Optional so tests can skip it. */
   replaceSearch?: (search: string) => void;
 }
@@ -29,11 +31,25 @@ export function prefersReducedMotion(win: Window = window): boolean {
   return win.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/** Follows the OS reduced-motion setting while the page is open. */
+export function watchReducedMotion(onChange: (reduce: boolean) => void, win: Window = window): () => void {
+  if (typeof win.matchMedia !== 'function') return () => undefined;
+  const query = win.matchMedia('(prefers-reduced-motion: reduce)');
+  const listener = (event: MediaQueryListEvent) => {
+    onChange(event.matches);
+  };
+  query.addEventListener('change', listener);
+  return () => {
+    query.removeEventListener('change', listener);
+  };
+}
+
 export function browserEnvironment(): ShellEnvironment {
   return {
     search: window.location.search,
     detectWebGL: () => detectWebGL(),
     prefersReducedMotion: () => prefersReducedMotion(),
+    watchReducedMotion: (onChange) => watchReducedMotion(onChange),
     replaceSearch: (search) => {
       replaceSearch(search);
     },

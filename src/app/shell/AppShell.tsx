@@ -19,11 +19,16 @@ interface AppShellProps {
   environment?: ShellEnvironment;
 }
 
-type ShellState = { status: 'loading' } | BootResult;
+/** `crashed` is the 2D view offered after the 3D office failed; it shares the no-WebGL path. */
+type ShellState = { status: 'loading' } | BootResult | { status: 'no-webgl'; reason: 'crashed' };
 
 export function AppShell({ environment }: AppShellProps) {
   const [env] = useState<ShellEnvironment>(() => environment ?? browserEnvironment());
-  const [preferences] = useState<ShellPreferences>(() => ({ reducedMotion: env.prefersReducedMotion() }));
+  const [preferences, setPreferences] = useState<ShellPreferences>(() => ({ reducedMotion: env.prefersReducedMotion() }));
+  // Follow the OS setting if it changes while the office is open.
+  useEffect(() => env.watchReducedMotion?.((reducedMotion) => {
+    setPreferences({ reducedMotion });
+  }), [env]);
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<ShellState>({ status: 'loading' });
   const [officeMounted, setOfficeMounted] = useState(false);
@@ -65,6 +70,11 @@ export function AppShell({ environment }: AppShellProps) {
     setState({ status: 'loading' });
     setOfficeMounted(false);
     setAttempt((n) => n + 1);
+  };
+
+  const useTwoD = () => {
+    setOfficeMounted(false);
+    setState({ status: 'no-webgl', reason: 'crashed' });
   };
 
   const markOfficeReady = useCallback(() => {
@@ -117,8 +127,10 @@ export function AppShell({ environment }: AppShellProps) {
         )}
         <main className="shell-main" aria-busy={status === 'loading'}>
           {state.status === 'loading' && <LoadingView />}
-          {state.status === 'error' && <ErrorView message={state.message} onRetry={retry} />}
-          {state.status === 'no-webgl' && <FallbackView />}
+          {state.status === 'error' && <ErrorView message={state.message} onRetry={retry} onUseTwoD={useTwoD} />}
+          {state.status === 'no-webgl' && (
+            <FallbackView reason={'reason' in state ? state.reason : 'no-webgl'} onRetry={retry} />
+          )}
           {state.status === 'ready' && (
             <OfficeView
               mounted={officeMounted}

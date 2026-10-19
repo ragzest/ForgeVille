@@ -27,6 +27,8 @@ Shared tokens live in `src/ui/tokens.ts`. Floor colours live in `src/ui/themes.t
 
 Status colours are the same on every floor. Accent text must meet 4.5:1 against the accent; `themes.test.ts` enforces this.
 
+Text in a status colour on paper, or white text on a status fill, uses the deep variant (`successDeep`, `dangerDeep`, `reviewDeep`): the plain fills are too light for it. Every panel text pairing is listed in `PANEL_TEXT_PAIRS` and must meet 4.5:1; `tokens.test.ts` enforces this.
+
 ## Building and floors
 
 The office is a building. Every floor shares one floor plan and has its own theme. Projects move in from the ground floor up; a floor without a project is vacant but walkable.
