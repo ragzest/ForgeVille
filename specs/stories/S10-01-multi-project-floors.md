@@ -15,6 +15,7 @@ As an operator, I want each project's team on its own floor so I can walk betwee
 - Mission control (S08-01) shows the building total and the current floor, clearly labelled.
 - The elevator panel shows each floor's live summary: active agents and blocked tasks.
 - Opening an agent's desk from a search or event on another floor offers "Go to floor N" rather than opening a panel for someone who is not in the room.
+- The README "Building" section (S09-04) is updated to say which floors are occupied.
 - Merge policy, transitions, and metrics tests are unchanged except for count updates caused by the new seed.
 
 ## Verification
