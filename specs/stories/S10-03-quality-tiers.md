@@ -1,6 +1,6 @@
 # S10-03 — Quality tiers and screen glow
 
-Status: todo
+Status: done
 Epic: [E10](../epics/E10-living-building.md)
 Depends on: S03-04
 

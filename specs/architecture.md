@@ -158,6 +158,8 @@ A scenario switcher replaces the snapshot. It does not mutate a hidden second st
 ## Rendering rules
 
 - Share geometries and materials for repeated desks, chairs, plants, and monitors. Materials are cached per colour (`toon`, `glow`) and per floor theme (`themeMaterials`).
+- Chairs, potted plants, and monitor bodies are instanced (`props.ts` recipes, `batchParts`, `InstancedProps`): one instanced mesh per shared part, plus an instanced outline. The outline shader applies `instanceMatrix`. Monitor screens stay per desk and repaint by distance: at once within 6 m, later up to 16 m, not at all beyond.
+- Quality tiers change how things are drawn, never what is shown. Solids read the tier from `QualityContext`; small props (longest side under 35 cm) lose their outline on Low.
 - Every lit solid goes through `<Solid>`, which adds the shared ink-outline hull. Do not create one-off `MeshStandardMaterial`s in the scene.
 - In-world displays (monitors, whiteboard, QA screen, status display) are pure view models (`screenModel`, `boardColumns`, `qaDisplay`, `statusTiles`) plus canvas painters. Overlay panels must reuse the same view models so the wall and the panel cannot disagree.
 - Canvas textures are cached by a key derived from their view model and disposed when replaced.
@@ -183,7 +185,9 @@ Playwright covers one office walkthrough through the 2D alternative and at least
 | Assets | Simple generated geometry first | Do not block on custom models |
 | Time | Scenario clock, not `Math.random` workflow rolls | Demos must be explainable |
 | Merge | Policy function in `domain/` | Buttons call the policy; they do not bypass it |
-| Look | Toon ramp, inverted-hull ink outlines, no post-processing | Readable, charming, and cheap. Bloom is deferred to S10-03 |
+| Look | Toon ramp, inverted-hull ink outlines, no full-frame post-processing | Readable, charming, and cheap. High tier adds a selective glow (below) |
 | Fonts | `@fontsource-variable/fredoka` and `jetbrains-mono`, bundled | Matches the sticker style with no runtime network font requests. Recorded exception to "small dependencies" |
 | Floors | Presentation-only themes; occupancy derived from project order | Adds a building without touching domain rules. Multi-project seed comes in S10-01 |
-| Shadows | `PCFShadowMap`, 2048² | `PCFSoftShadowMap` is deprecated in three r186 |
+| Glow | `postprocessing` (`MipmapBlurPass`) on a dedicated glow layer, High tier only | S10-03. The frame is drawn exactly as on Medium; a half-size buffer holds black silhouettes plus only the meshes on `GLOW_LAYER` (screens, lit lamps), is blurred, and is added on top. Walls never haze and tone mapping is untouched. Recorded exception to "small dependencies": one package, tree-shaken to the blur pass |
+| Quality tiers | Low / Medium (default) / High / Auto, presentation only, kept in `localStorage` | S10-03. Auto drops a tier after 3 s under 45 fps and says so |
+| Shadows | `PCFShadowMap`, 2048² (1024² on Low) | `PCFSoftShadowMap` is deprecated in three r186 |

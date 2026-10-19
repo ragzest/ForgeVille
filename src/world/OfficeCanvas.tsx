@@ -3,6 +3,7 @@ import { useMemo, useRef } from 'react';
 import { ACESFilmicToneMapping, PCFShadowMap } from 'three';
 import { useWorkflow } from '../store/context.ts';
 import { interactionStore } from '../store/interaction.ts';
+import { useEffectiveTier, useQuality } from '../store/quality.ts';
 import { navigationStore, useNavigation } from '../store/navigation.ts';
 import { floorById, floorSnapshot, floorTitle, occupantOf } from './building.ts';
 import { floorSky } from './dayCycle.ts';
@@ -10,6 +11,7 @@ import { Characters } from './characters/Characters.tsx';
 import { characterModels } from './characters/models.ts';
 import { floorDesks } from './deskViews.ts';
 import { Furniture } from './Furniture.tsx';
+import { GlowPass } from './GlowPass.tsx';
 import { interactionTargets } from './interaction.ts';
 import { lockPointer } from './interactable.ts';
 import { LiveSkyProvider } from './LiveSkyProvider.tsx';
@@ -17,6 +19,9 @@ import { PLAYER_SPAWN, VACANT_FLOOR_LANDMARKS, deskAssignments } from './layout.
 import { Lights, Outside } from './Outside.tsx';
 import { EYE_HEIGHT } from './player/movement.ts';
 import { PlayerRig } from './player/PlayerRig.tsx';
+import { PerfProbe } from './PerfProbe.tsx';
+import { TIER_RULES } from './quality.ts';
+import { QualityContext } from './qualityContext.ts';
 import { floorBoard } from './screens/board.ts';
 import { qaDisplay, statusTiles } from './screens/displays.ts';
 import { screenModel } from './screens/screenModel.ts';
@@ -82,10 +87,16 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Graphics quality: presentation only, read outside the Canvas like the rest.
+  const tier = useEffectiveTier();
+  const auto = useQuality((s) => s.setting === 'auto');
+  const quality = useMemo(() => ({ tier, rules: TIER_RULES[tier] }), [tier]);
+  const { rules } = quality;
+
   return (
     <Canvas
       shadows={{ type: PCFShadowMap }}
-      dpr={[1, 2]}
+      dpr={typeof rules.dpr === 'number' ? rules.dpr : [rules.dpr[0], rules.dpr[1]]}
       gl={{ toneMapping: ACESFilmicToneMapping, antialias: true }}
       camera={{ position: [PLAYER_SPAWN.x, EYE_HEIGHT, PLAYER_SPAWN.z], fov: 72, near: 0.05, far: 900 }}
       onCreated={(state) => {
@@ -101,7 +112,9 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
         }
       }}
       aria-label={`3D office, ${floorTitle(floor)}`}
+      data-quality={tier}
     >
+      <QualityContext.Provider value={quality}>
       <FloorSceneProvider floor={floor} interactive={!vacant} reducedMotion={reducedMotion} sky={sky}>
         <LiveSkyProvider>
           <OutlineSizer />
@@ -112,8 +125,11 @@ export function OfficeCanvas({ onReady, reducedMotion }: OfficeCanvasProps) {
           <Characters characters={scene.characters} />
           <PlayerRig targets={scene.targets} />
           <SceneAudit />
+          <PerfProbe auto={auto} tier={tier} />
+          {rules.glow && <GlowPass />}
         </LiveSkyProvider>
       </FloorSceneProvider>
+      </QualityContext.Provider>
     </Canvas>
   );
 }

@@ -5,6 +5,7 @@ import { openMissionControl } from '../mission-control/missionControl.ts';
 import { useNavigation, type OfficeView } from '../../store/navigation.ts';
 import { FLOORS, floorTitle } from '../../world/building.ts';
 import { TRAVEL_ZONES, zoneById } from '../../world/layout.ts';
+import { QualityMenu } from '../quality/QualityMenu.tsx';
 
 interface Props {
   /** Whether the 3D office can run. Without WebGL only the 2D view is offered. */
@@ -99,6 +100,11 @@ export function NavigationToolbar({ webgl }: Props) {
           >
             Follow the clock
           </button>
+        </div>
+      )}
+      {webgl && (
+        <div className="nav-group" role="group" aria-label="Settings">
+          <QualityMenu />
         </div>
       )}
     </nav>

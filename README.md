@@ -56,6 +56,7 @@ npm run test:e2e
 | --- | --- |
 | `?scenario=<id>` | Start on a demo scenario: `feature-in-progress` (default), `review-and-qa-pass`, `qa-failure`, `agent-blocked`, `successful-merge`. An unknown id falls back to the default and says so. |
 | `?webgl=off` | Skip the 3D office and use the 2D view, as if the browser had no WebGL |
+| `?debug=perf` | Dev server only: a frame-time readout (ms, fps, draw calls, triangles, tier) over the office |
 
 ## Controls
 
@@ -72,6 +73,7 @@ npm run test:e2e
 | Zone buttons (Reception, Developer desks, QA lab, Kanban board, Project status, Meeting area) | Travel to that zone in 3D, or select it in the 2D view |
 | Floor picker (**1 Workshop** to **4 Ember Forge**) | Ride straight to that floor |
 | **Follow the clock** | Let the sky follow the scenario time (night, dawn, noon, golden hour, dusk) instead of each floor's own mood. Off by default |
+| **Graphics** menu | Pick Low, Medium (default), High, or Auto. Low drops outlines on small props, halves the shadow map, and renders at 1× pixel density; High adds a soft glow to screens and lit lamps. Auto starts on High and drops one tier, with a notice, when the office stays under 45 fps for 3 seconds. Kept in this browser |
 | Elevator (walk up to it and press <kbd>E</kbd>, or click it) | Lists every floor with its theme and occupant, and takes you there |
 | **Scenario** menu | Load one of the five demo scenarios across every view |
 

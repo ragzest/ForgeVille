@@ -23,6 +23,7 @@ import { STOREY_HEIGHT } from './building.ts';
 import { useLiveSky } from './liveSky.ts';
 import { GEOMETRIES, toon } from './materials.ts';
 import { useFloorScene } from './floorScene.ts';
+import { useSceneQuality } from './qualityContext.ts';
 import { patchTriangles, sunPatches } from './sunlight.ts';
 
 /**
@@ -324,6 +325,7 @@ export function Outside() {
 /** Sun (or moon) and sky fill, following the live sky. */
 export function Lights() {
   const { sky } = useFloorScene();
+  const { rules } = useSceneQuality();
   const live = useLiveSky();
   const hemi = useRef<HemisphereLight>(null);
   const ambient = useRef<AmbientLight>(null);
@@ -346,12 +348,14 @@ export function Lights() {
       <hemisphereLight ref={hemi} args={[sky.hemiSky, sky.hemiGround, sky.hemiIntensity]} />
       <ambientLight ref={ambient} intensity={sky.ambient} />
       <directionalLight
+        // The shadow map is allocated once per light, so a new size needs a new light.
+        key={rules.shadowMapSize}
         ref={sun}
         position={[...sky.sunPosition]}
         intensity={sky.sunIntensity}
         color={sky.sun}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[rules.shadowMapSize, rules.shadowMapSize]}
         shadow-bias={-0.0006}
         shadow-normalBias={0.03}
         shadow-camera-left={-15}

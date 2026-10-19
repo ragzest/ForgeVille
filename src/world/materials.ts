@@ -293,7 +293,7 @@ export function hullGeometry(geometry: BufferGeometry): BufferGeometry {
   return hull;
 }
 
-/** Shared by every outline. `size` is the drawing-buffer size, updated on resize. */
+/** Shared by every outline, instanced or not. `size` is the drawing-buffer size, updated on resize. */
 export const OUTLINE_MATERIAL = new ShaderMaterial({
   side: BackSide,
   uniforms: {
@@ -305,8 +305,15 @@ export const OUTLINE_MATERIAL = new ShaderMaterial({
     uniform float thickness;
     uniform vec2 size;
     void main() {
-      vec4 clipPosition = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      vec4 clipNormal = projectionMatrix * modelViewMatrix * vec4(normal, 0.0);
+      vec4 local = vec4(position, 1.0);
+      vec4 localNormal = vec4(normal, 0.0);
+      // Instanced props: each copy's outline follows its own instance matrix.
+      #ifdef USE_INSTANCING
+        local = instanceMatrix * local;
+        localNormal = instanceMatrix * localNormal;
+      #endif
+      vec4 clipPosition = projectionMatrix * modelViewMatrix * local;
+      vec4 clipNormal = projectionMatrix * modelViewMatrix * localNormal;
       vec2 dir = clipNormal.xy;
       float len = length(dir);
       if (len > 1e-5) clipPosition.xy += dir / len * thickness / size * clipPosition.w * 2.0;
