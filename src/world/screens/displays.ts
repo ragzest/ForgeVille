@@ -1,16 +1,14 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import {
-  COLUMN_LABELS,
   REQUIRED_CHECKS,
-  TASK_COLUMNS,
   missionControlMetrics,
   type CheckKind,
-  type TaskColumn,
   type TestRunStatus,
   type WorkflowSnapshot,
 } from '../../domain/index.ts';
 import { MONO_FONT, UI_FONT } from '../../ui/fonts.ts';
 import { COLORS } from '../../ui/tokens.ts';
+import { COLUMN_NOTE, WALL_NOTES, type BoardColumn } from './board.ts';
 
 /**
  * In-world displays: the Kanban whiteboard, the QA screen, and the project
@@ -22,37 +20,7 @@ import { COLORS } from '../../ui/tokens.ts';
 // ---------------------------------------------------------------------------
 // Kanban board
 
-/** Sticky-note colours per column: chip (header) and note (card). */
-export const COLUMN_NOTE: Readonly<Record<TaskColumn, { chip: string; note: string }>> = {
-  backlog: { chip: '#ffd166', note: '#fff3b0' },
-  ready: { chip: '#80ed99', note: '#d8f9df' },
-  in_progress: { chip: '#4cc9f0', note: '#cfeefd' },
-  in_review: { chip: '#a99bff', note: '#e8e4ff' },
-  qa: { chip: '#ff9f68', note: '#ffe3cf' },
-  blocked: { chip: '#ff6b6b', note: '#ffd6d6' },
-  merged: { chip: '#c77dff', note: '#eadcff' },
-};
-
-export interface BoardCard {
-  readonly issueKey: string;
-  readonly title: string;
-  readonly assignee: string;
-}
-
-export interface BoardColumn {
-  readonly column: TaskColumn;
-  readonly label: string;
-  readonly cards: readonly BoardCard[];
-}
-
-export function boardColumns(snapshot: WorkflowSnapshot): BoardColumn[] {
-  const name = (id: string | null) => snapshot.agents.find((a) => a.id === id)?.name ?? '—';
-  return TASK_COLUMNS.map((column) => ({
-    column,
-    label: COLUMN_LABELS[column],
-    cards: snapshot.tasks.filter((t) => t.column === column).map((t) => ({ issueKey: t.issueKey, title: t.title, assignee: name(t.assigneeId) })),
-  }));
-}
+export { COLUMN_NOTE, WALL_NOTES, boardColumns, type BoardCard, type BoardColumn } from './board.ts';
 
 // ---------------------------------------------------------------------------
 // QA screen
@@ -189,7 +157,7 @@ export function paintBoard(columns: readonly BoardColumn[], heading: string): Ca
       ctx.fillText('Empty', x + lane / 2, top + 100);
       ctx.textAlign = 'left';
     }
-    col.cards.slice(0, 4).forEach((card, k) => {
+    col.cards.slice(0, WALL_NOTES).forEach((card, k) => {
       const y = top + 62 + k * 112;
       const tilt = ((k + i) % 3 - 1) * 0.02;
       ctx.save();
@@ -206,10 +174,10 @@ export function paintBoard(columns: readonly BoardColumn[], heading: string): Ca
       ctx.fillText(fit(ctx, card.assignee, lane - 56), -lane / 2 + 26, 32);
       ctx.restore();
     });
-    if (col.cards.length > 4) {
+    if (col.cards.length > WALL_NOTES) {
       ctx.fillStyle = COLORS.inkSoft;
       ctx.font = `600 18px ${UI_FONT}`;
-      ctx.fillText(`+${String(col.cards.length - 4)} more`, x + 18, canvas.height - 18);
+      ctx.fillText(`+${String(col.cards.length - WALL_NOTES)} more`, x + 18, canvas.height - 18);
     }
   });
   return done(canvas);

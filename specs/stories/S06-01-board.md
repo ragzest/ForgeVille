@@ -1,6 +1,6 @@
 # S06-01 — Board from snapshot
 
-Status: todo
+Status: done
 Epic: [E06](../epics/E06-board.md)
 Depends on: S04-02, S02-05
 

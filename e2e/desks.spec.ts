@@ -28,11 +28,12 @@ test('the 2D roster opens the desk panel with the agent and their work', async (
   await expect(panel.getByText('Resume needs a paused or interrupted session; this one is running.')).toBeVisible();
 
   await panel.getByRole('button', { name: 'Inspect task' }).click();
-  await expect(panel.getByRole('status')).toContainText('Selected for the board: LN-4');
-  await expect(page.getByRole('region', { name: 'Board' }).locator('li.is-selected')).toContainText('LN-4');
+  const board = page.getByRole('dialog', { name: 'Kanban board' });
+  await expect(board.getByRole('button', { name: /LN-4/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('region', { name: 'Board', exact: true }).locator('li.is-selected')).toContainText('LN-4');
 
   await page.keyboard.press('Escape');
-  await expect(panel).toBeHidden();
+  await expect(board).toBeHidden();
 });
 
 test('the desk panel fits and closes at phone width', async ({ page }) => {

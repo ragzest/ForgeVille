@@ -56,11 +56,15 @@ test('the 2D view replaces the canvas and lists zones, team, and tasks', async (
   const team = page.getByRole('region', { name: 'Team' });
   await expect(team.getByRole('listitem')).toHaveCount(7);
   await expect(team.getByRole('listitem').filter({ hasText: 'Chen' })).toContainText('Blocked');
-  await expect(page.getByRole('region', { name: 'Board' })).toContainText('LN-4');
+  await expect(page.getByRole('region', { name: 'Board', exact: true })).toContainText('LN-4');
 
   const zones = page.getByRole('region', { name: 'Zones' });
   await zones.getByRole('button', { name: 'Kanban board' }).click();
   await expect(zones.getByRole('button', { name: 'Kanban board' })).toHaveAttribute('aria-pressed', 'true');
+  // Choosing the board in 2D opens the board overlay.
+  await expect(page.getByRole('dialog', { name: 'Kanban board' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 
   // Back to the 3D office.
   await toolbar(page).getByRole('button', { name: 'Walk' }).click();

@@ -1,6 +1,6 @@
 # E06 — Kanban whiteboard
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 
