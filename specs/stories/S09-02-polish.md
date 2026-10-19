@@ -21,7 +21,7 @@ As a visitor, I want the office and panels to feel finished so the prototype is 
 
 ## Verification
 
-- Manual pass recorded in the story PR or a short `specs/verification.md` note if the team is not using PRs yet.
+- Manual pass recorded in the story PR description (the team uses PRs, so no `specs/verification.md` is needed).
 - `npm run typecheck`, `npm run lint`, `npm test`.
 
 ## Out of scope
