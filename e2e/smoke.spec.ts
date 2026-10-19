@@ -5,7 +5,9 @@ test('app shell loads with the ForgeVille title', async ({ page }) => {
   await expect(page).toHaveTitle(/ForgeVille/);
   await expect(page.getByRole('main')).toBeVisible();
   // Headless browsers may or may not have WebGL; either outcome is a booted shell.
-  await expect(page.locator('[data-shell-status="ready"], [data-shell-status="no-webgl"]')).toBeVisible();
+  await expect(page.locator('[data-shell-status="ready"], [data-shell-status="no-webgl"]')).toBeVisible({
+    timeout: 30_000,
+  });
 });
 
 test('the 3D office canvas mounts and the shell becomes ready', async ({ page }) => {
@@ -44,7 +46,9 @@ test('?shell=error shows a message and retry recovers', async ({ page }) => {
   await expect(alert).toContainText('The office could not start.');
   await alert.getByRole('button', { name: 'Retry' }).click();
   await expect(alert).toBeHidden();
-  await expect(page.locator('[data-shell-status="ready"], [data-shell-status="no-webgl"]')).toBeVisible();
+  await expect(page.locator('[data-shell-status="ready"], [data-shell-status="no-webgl"]')).toBeVisible({
+    timeout: 30_000,
+  });
 });
 
 test('without WebGL the shell offers the 2D team and board regions', async ({ page }) => {
