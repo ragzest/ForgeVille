@@ -4,6 +4,8 @@ Status: done
 Epic: [E03](../epics/E03-office.md)
 Depends on: S01-02, S02-05
 
+> Palette, lighting, and walls were revised by [S03-04](S03-04-themed-floors.md): floors are themed, walls have window openings, and the room has a ceiling and an outside.
+
 ## Story
 
 As a visitor, I want a warm, readable room with named zones so later desks and signs have a place to live.

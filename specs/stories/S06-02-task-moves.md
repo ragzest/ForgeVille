@@ -12,7 +12,8 @@ As a user, I want to inspect a task and simulate a legal move so I can follow th
 
 - Task detail shows description, dependencies, assignee, column, and linked pull request if any.
 - The UI offers only legal next columns, plus a way to attempt a blocked demonstration if useful. Illegal choices are disabled or rejected with the domain reason.
-- A successful move updates board, desk presence, and any open task detail together.
+- A successful move updates the board, desk presence, the whiteboard texture, the desk monitor banner, and any open task detail together.
+- The selected task (`selectedTaskId`) is outlined on the whiteboard texture as well as in the overlay.
 - Dependencies are visible. The mock data must include at least one dependency. The move rules do not need a new dependency engine beyond what E02 specified. If a move is refused because of a dependency, that rule must be added to domain tests in this story rather than only in the component.
 
 ## Verification

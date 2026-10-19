@@ -4,13 +4,14 @@ Status: done
 
 ## Outcome
 
-One compact, readable office floor with the seven required zones, shared low-poly furnishings, and characters whose pose reflects domain presence.
+One compact, readable office floor plan with the seven required zones, shared cel-shaded furnishings, and characters whose pose reflects domain presence. The plan repeats on four themed floors of a small building (S03-04).
 
 ## Stories
 
 - [S03-01](../stories/S03-01-office-shell.md)
 - [S03-02](../stories/S03-02-furnishings.md)
 - [S03-03](../stories/S03-03-characters.md)
+- [S03-04](../stories/S03-04-themed-floors.md) — themed floors, cel-shaded look, live displays
 
 ## Done when
 

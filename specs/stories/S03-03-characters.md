@@ -4,6 +4,8 @@ Status: done
 Epic: [E03](../epics/E03-office.md)
 Depends on: S03-02, S02-02
 
+> Revised by [S03-04](S03-04-themed-floors.md): characters have faces, blink and breathe, and wear a name tag in their runtime colour.
+
 ## Story
 
 As a visitor, I want to see who is working, idle, blocked, or waiting on review without opening a panel.

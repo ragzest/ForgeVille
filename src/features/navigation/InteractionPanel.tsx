@@ -1,4 +1,5 @@
 import { useInteraction } from '../../store/interaction.ts';
+import { ElevatorPanel } from '../building/ElevatorPanel.tsx';
 import { DeskPanel } from '../desks/DeskPanel.tsx';
 import { agentIdFromDesk } from '../desks/deskDetails.ts';
 
@@ -16,6 +17,7 @@ export function InteractionPanel() {
   if (!open) return null;
   const agentId = agentIdFromDesk(open.id);
   if (agentId !== null) return <DeskPanel key={agentId} agentId={agentId} title={open.label} />;
+  if (open.id === 'elevator') return <ElevatorPanel title={open.label} />;
   const kind = open.id;
 
   return (

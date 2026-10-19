@@ -50,8 +50,9 @@ export const ZONES: readonly Zone[] = [
   {
     id: 'reception',
     label: 'Reception',
-    center: { x: 8.5, z: 5 },
-    size: { width: 6, depth: 4 },
+    // Runs to the south wall so the elevator lobby belongs to reception.
+    center: { x: 8.5, z: 5.5 },
+    size: { width: 6, depth: 5 },
     anchor: { x: 6.5, z: 5 },
   },
   {
@@ -98,23 +99,71 @@ export const ZONES: readonly Zone[] = [
   },
 ];
 
+export type WallSide = 'north' | 'south' | 'east' | 'west';
+
 export interface WallWindow {
-  readonly wall: 'north' | 'east';
-  /** Position along the wall: x for the north wall, z for the east wall. */
+  readonly wall: WallSide;
+  /** Position along the wall: x for the north and south walls, z for east and west. */
   readonly offset: number;
   readonly width: number;
 }
 
 export const WINDOWS: readonly WallWindow[] = [
-  { wall: 'north', offset: -6, width: 3 },
-  { wall: 'north', offset: -1.5, width: 3 },
-  { wall: 'north', offset: 3, width: 3 },
-  { wall: 'east', offset: -4.5, width: 2.5 },
+  { wall: 'north', offset: -6, width: 3.2 },
+  { wall: 'north', offset: -1.5, width: 3.2 },
+  { wall: 'north', offset: 3, width: 3.2 },
+  { wall: 'east', offset: -4.5, width: 2.6 },
+  { wall: 'west', offset: 5.5, width: 2.6 },
+  { wall: 'south', offset: -8, width: 2.6 },
 ];
 
 /** Window glass spans this height band on the wall. */
-export const WINDOW_SILL = 0.9;
-export const WINDOW_HEIGHT = 1.5;
+export const WINDOW_SILL = 0.8;
+export const WINDOW_HEIGHT = 1.65;
+
+/** Inner length of a wall. North and south walls also cover the corners. */
+export function wallLength(side: WallSide): number {
+  return side === 'north' || side === 'south' ? FLOOR.width + WALL.thickness * 2 : FLOOR.depth;
+}
+
+export interface WallPiece {
+  /** Start and end along the wall, centred on its middle. */
+  readonly from: number;
+  readonly to: number;
+  readonly bottom: number;
+  readonly top: number;
+}
+
+/** Splits a wall into solid pieces around its window openings: piers, sills, and lintels. */
+export function wallPieces(side: WallSide): WallPiece[] {
+  const length = wallLength(side);
+  const top = WINDOW_SILL + WINDOW_HEIGHT;
+  const openings = WINDOWS.filter((w) => w.wall === side)
+    .map((w) => ({ from: w.offset - w.width / 2, to: w.offset + w.width / 2 }))
+    .sort((a, b) => a.from - b.from);
+  const pieces: WallPiece[] = [];
+  let cursor = -length / 2;
+  for (const o of openings) {
+    if (o.from > cursor) pieces.push({ from: cursor, to: o.from, bottom: 0, top: WALL.height });
+    pieces.push({ from: o.from, to: o.to, bottom: 0, top: WINDOW_SILL });
+    pieces.push({ from: o.from, to: o.to, bottom: top, top: WALL.height });
+    cursor = o.to;
+  }
+  if (cursor < length / 2) pieces.push({ from: cursor, to: length / 2, bottom: 0, top: WALL.height });
+  return pieces;
+}
+
+/** Ceiling lamps: panels on the ceiling, and warm pools of light when a floor's lamps are on. */
+export const CEILING_LAMPS: readonly Point2[] = [
+  { x: -5.7, z: -2.8 },
+  { x: 0, z: -2.8 },
+  { x: -2.85, z: 0.4 },
+  { x: 8.5, z: -4.5 },
+  { x: 8.5, z: 4 },
+  { x: -8, z: 5.5 },
+  { x: -1, z: 5 },
+  { x: -9.5, z: -2 },
+];
 
 /** Temporary camera that frames the whole floor until E04 adds player controls. */
 export const OVERVIEW_CAMERA = {
@@ -201,7 +250,7 @@ export function deskAssignments(agents: readonly { readonly id: string }[]): Des
   });
 }
 
-export type LandmarkId = 'board' | 'qa-screen' | 'status-display' | 'reception';
+export type LandmarkId = 'board' | 'qa-screen' | 'status-display' | 'reception' | 'elevator';
 
 export interface Landmark {
   /** Stable interactive id. */
@@ -243,7 +292,17 @@ export const LANDMARKS: readonly Landmark[] = [
     footprint: { center: { x: 9.2, z: 5 }, width: 1, depth: 3 },
     approach: { x: 7.6, z: 5 },
   },
+  {
+    id: 'elevator',
+    label: 'Elevator',
+    zone: 'reception',
+    footprint: { center: { x: 7, z: 7.85 }, width: 1.8, depth: 0.3 },
+    approach: { x: 7, z: 6.8 },
+  },
 ];
+
+/** Landmarks that work on a vacant floor: only the elevator, so a visitor can always leave. */
+export const VACANT_FLOOR_LANDMARKS: readonly LandmarkId[] = ['elevator'];
 
 /** Every stable interactive id for a set of agents. */
 export function interactiveIds(agents: readonly { readonly id: string }[]): string[] {

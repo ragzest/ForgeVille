@@ -4,6 +4,8 @@ Status: done
 Epic: [E03](../epics/E03-office.md)
 Depends on: S03-01
 
+> Revised by [S03-04](S03-04-themed-floors.md): furniture is cel-shaded with ink outlines, and the board, QA screen, status display, and monitors paint snapshot data.
+
 ## Story
 
 As a visitor, I want the office to read as a small software company at a glance, with desks, a board, a QA corner, and a meeting table.

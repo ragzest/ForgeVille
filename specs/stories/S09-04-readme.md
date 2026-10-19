@@ -11,7 +11,9 @@ As a new contributor, I want the README to explain setup, controls, architecture
 ## Acceptance criteria
 
 - README replaces the planning-only intro with: what ForgeVille is, milestone limits, install, dev, test, lint, type-check, and e2e commands.
-- Controls table matches the implemented keys.
+- Controls table matches the implemented keys, including the floor picker and the elevator.
+- A "Building" section explains the four floors, their themes, and why floors 2–4 are vacant until S10-01.
+- Screenshots of each floor, committed under `docs/screenshots/`.
 - Architecture section points to `specs/architecture.md` and names the store as the source of truth.
 - Limitations state that agents, terminals, checks, screenshots, usage, and merges are simulated.
 - Recommended next milestone is one real coding-agent runtime against an isolated local workspace, with E11 still not implemented.

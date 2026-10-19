@@ -1,4 +1,4 @@
-import { LANDMARKS, deskAssignments, deskFootprint, type Footprint, type Point2 } from './layout.ts';
+import { LANDMARKS, deskAssignments, deskFootprint, type Footprint, type LandmarkId, type Point2 } from './layout.ts';
 
 /** How close (metres, to the object's footprint) the player must be to use it. */
 export const INTERACT_RADIUS = 1.5;
@@ -16,15 +16,26 @@ export function deskLabel(name: string): string {
   return `${name}'s desk`;
 }
 
-/** Every interactive object for the current agents: one desk each plus the landmarks. */
-export function interactionTargets(agents: readonly { readonly id: string; readonly name: string }[]): InteractionTarget[] {
+/**
+ * Every interactive object for the current agents: one desk each plus the
+ * landmarks. `landmarks` limits which landmarks count (a vacant floor offers
+ * only the elevator).
+ */
+export function interactionTargets(
+  agents: readonly { readonly id: string; readonly name: string }[],
+  landmarks?: readonly LandmarkId[],
+): InteractionTarget[] {
   const desks = deskAssignments(agents).map((desk) => ({
     id: desk.id,
     label: deskLabel(agents.find((a) => a.id === desk.agentId)?.name ?? desk.agentId),
     footprint: deskFootprint(desk.slot),
   }));
-  const landmarks = LANDMARKS.map((l) => ({ id: l.id, label: l.label, footprint: l.footprint }));
-  return [...desks, ...landmarks];
+  const marks = LANDMARKS.filter((l) => !landmarks || landmarks.includes(l.id)).map((l) => ({
+    id: l.id,
+    label: l.label,
+    footprint: l.footprint,
+  }));
+  return [...desks, ...marks];
 }
 
 /** Distance from a point to the nearest edge of a footprint; 0 inside it. */

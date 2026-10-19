@@ -32,6 +32,8 @@ src/
     guard.ts           refuses external side effects in this milestone
   store/               shared readable state and command dispatch
   world/               canvas, office geometry, characters, interaction volumes
+    building.ts        floors, themes per floor, derived project occupancy
+    screens/           read-only view models + canvas painters for monitors, board, QA, status
   features/
     mission-control/
     board/
@@ -39,7 +41,11 @@ src/
     terminal/
     pull-request/
     navigation/
-  ui/                  shared panels, status marks, buttons
+  ui/                  tokens, floor themes, runtime styles, fonts, shared panels
+    tokens.ts          colours shared by every floor (status, ink, paper)
+    themes.ts          one FloorTheme per floor: palette, sky, lighting, accent
+    runtimes.ts        display accent and glyph per runtime label
+  features/building/   elevator panel, floor arrival banner
 ```
 
 Tests live next to the unit they cover, or under `e2e/` for Playwright.
@@ -63,6 +69,13 @@ Allowed writers:
 - mock workflow commands
 - scenario loader
 - user commands that call those commands (`moveTask`, `pauseSession`, `requestChanges`, `mergePullRequest`)
+
+Presentation state lives in small separate stores and never holds workflow data:
+
+- `navigation` — view (walk, overview, 2D), selected zone, travel request, selected task, current floor
+- `interaction` — focused and open object
+
+Floor occupancy (which project is on which floor) is derived from `snapshot.projects` order by `buildingDirectory`. It is not stored.
 
 Not allowed:
 
@@ -144,7 +157,10 @@ A scenario switcher replaces the snapshot. It does not mutate a hidden second st
 
 ## Rendering rules
 
-- Share geometries and materials for repeated desks, chairs, plants, and monitors.
+- Share geometries and materials for repeated desks, chairs, plants, and monitors. Materials are cached per colour (`toon`, `glow`) and per floor theme (`themeMaterials`).
+- Every lit solid goes through `<Solid>`, which adds the shared ink-outline hull. Do not create one-off `MeshStandardMaterial`s in the scene.
+- In-world displays (monitors, whiteboard, QA screen, status display) are pure view models (`screenModel`, `boardColumns`, `qaDisplay`, `statusTiles`) plus canvas painters. Overlay panels must reuse the same view models so the wall and the panel cannot disagree.
+- Canvas textures are cached by a key derived from their view model and disposed when replaced.
 - Character motion reads derived presence. It does not write domain state.
 - Camera motion stays predictable. Pointer lock releases on Escape and when a text input or terminal panel is open.
 - Keyboard movement ignores events while focus is in an input, textarea, or open terminal-style panel.
@@ -167,3 +183,7 @@ Playwright covers one office walkthrough through the 2D alternative and at least
 | Assets | Simple generated geometry first | Do not block on custom models |
 | Time | Scenario clock, not `Math.random` workflow rolls | Demos must be explainable |
 | Merge | Policy function in `domain/` | Buttons call the policy; they do not bypass it |
+| Look | Toon ramp, inverted-hull ink outlines, no post-processing | Readable, charming, and cheap. Bloom is deferred to S10-03 |
+| Fonts | `@fontsource-variable/fredoka` and `jetbrains-mono`, bundled | Matches the sticker style with no runtime network font requests. Recorded exception to "small dependencies" |
+| Floors | Presentation-only themes; occupancy derived from project order | Adds a building without touching domain rules. Multi-project seed comes in S10-01 |
+| Shadows | `PCFShadowMap`, 2048² | `PCFSoftShadowMap` is deprecated in three r186 |

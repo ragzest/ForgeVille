@@ -46,8 +46,9 @@ describe('office layout', () => {
 
   it('fits windows on their walls', () => {
     expect(WINDOW_SILL + WINDOW_HEIGHT).toBeLessThan(WALL.height);
+    expect(new Set(WINDOWS.map((w) => w.wall))).toEqual(new Set(['north', 'south', 'east', 'west']));
     for (const w of WINDOWS) {
-      const half = (w.wall === 'north' ? FLOOR.width : FLOOR.depth) / 2;
+      const half = (w.wall === 'north' || w.wall === 'south' ? FLOOR.width : FLOOR.depth) / 2;
       expect(Math.abs(w.offset) + w.width / 2).toBeLessThanOrEqual(half);
     }
   });
@@ -56,5 +57,21 @@ describe('office layout', () => {
     const [x, y, z] = OVERVIEW_CAMERA.position;
     expect(y).toBeGreaterThan(WALL.height);
     expect(Math.abs(x) > FLOOR.width / 2 || Math.abs(z) > FLOOR.depth / 2).toBe(true);
+  });
+});
+
+describe('walls with windows', () => {
+  it('leaves an opening for every window and covers the rest of the wall', async () => {
+    const { wallPieces, wallLength } = await import('./layout.ts');
+    for (const side of ['north', 'south', 'east', 'west'] as const) {
+      const pieces = wallPieces(side);
+      const full = pieces.filter((p) => p.bottom === 0 && p.top === WALL.height);
+      const sills = pieces.filter((p) => p.top === WINDOW_SILL);
+      expect(sills).toHaveLength(WINDOWS.filter((w) => w.wall === side).length);
+      // Full-height piers plus window widths add up to the wall length.
+      const covered = [...full, ...sills].reduce((n, p) => n + (p.to - p.from), 0);
+      expect(covered).toBeCloseTo(wallLength(side), 5);
+      for (const p of pieces) expect(p.to).toBeGreaterThan(p.from);
+    }
   });
 });

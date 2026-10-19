@@ -6,6 +6,7 @@ import { interactionStore, useInteraction } from '../../store/interaction.ts';
 import { deskLabel } from '../../world/interaction.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
 import { deskId } from '../desks/deskDetails.ts';
+import { buildingDirectory, floorById, floorTitle } from '../../world/building.ts';
 
 const ZONE_NOTES: Readonly<Record<ZoneId, string>> = {
   reception: 'Project plaque and front desk.',
@@ -27,11 +28,32 @@ export function TwoDView() {
   const selectZone = useNavigation((s) => s.selectZone);
   const selectedTaskId = useNavigation((s) => s.selectedTaskId);
   const openId = useInteraction((s) => s.open?.id ?? null);
+  const floorId = useNavigation((s) => s.floor);
+  const goToFloor = useNavigation((s) => s.goToFloor);
+  const home = buildingDirectory(snapshot).find((o) => o.project !== null);
+  const vacant = home !== undefined && home.floor.id !== floorId;
 
   const agentName = (id: string | null) => snapshot.agents.find((a) => a.id === id)?.name ?? 'Unassigned';
 
   return (
     <div className="two-d">
+      {vacant && (
+        <div className="shell-panel shell-panel--notice two-d-vacant" role="status">
+          <p>
+            <strong>{floorTitle(floorById(floorId))}</strong> is vacant. The {home.project?.name} team works on{' '}
+            {floorTitle(home.floor)}; the lists below are theirs.
+          </p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              goToFloor(home.floor.id);
+            }}
+          >
+            Go to {floorTitle(home.floor)}
+          </button>
+        </div>
+      )}
       <section className="shell-region" aria-labelledby="two-d-zones-heading">
         <h2 id="two-d-zones-heading">Zones</h2>
         <ul className="two-d-list">
