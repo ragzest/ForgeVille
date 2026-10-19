@@ -11,24 +11,33 @@ export interface InteractionState {
   readonly focused: { readonly id: string; readonly label: string } | null;
   /** Object whose panel is open, or null. */
   readonly open: { readonly id: string; readonly label: string } | null;
+  /** True while the open desk panel shows its simulated terminal. Pauses walking. */
+  readonly terminal: boolean;
   readonly setFocused: (target: { id: string; label: string } | null) => void;
   readonly activate: (target: { id: string; label: string }) => void;
   readonly close: () => void;
+  /** Shows or hides the terminal in the open desk panel. Ignored with nothing open. */
+  readonly showTerminal: (on: boolean) => void;
 }
 
 export function createInteractionStore() {
   return createStore<InteractionState>()((set, get) => ({
     focused: null,
     open: null,
+    terminal: false,
     setFocused: (target) => {
       if (get().focused?.id === target?.id) return;
       set({ focused: target ? { id: target.id, label: target.label } : null });
     },
     activate: (target) => {
-      set({ open: { id: target.id, label: target.label } });
+      set({ open: { id: target.id, label: target.label }, terminal: false });
     },
     close: () => {
-      if (get().open) set({ open: null });
+      if (get().open) set({ open: null, terminal: false });
+    },
+    showTerminal: (on) => {
+      const next = on && get().open !== null;
+      if (get().terminal !== next) set({ terminal: next });
     },
   }));
 }
@@ -36,7 +45,7 @@ export function createInteractionStore() {
 /** The app's interaction store. Tests call `interactionStore.setState(INITIAL_INTERACTION)` to reset it. */
 export const interactionStore = createInteractionStore();
 
-export const INITIAL_INTERACTION = { focused: null, open: null } as const;
+export const INITIAL_INTERACTION = { focused: null, open: null, terminal: false } as const;
 
 export function useInteraction<T>(selector: (state: InteractionState) => T): T {
   return useStore(interactionStore, selector);

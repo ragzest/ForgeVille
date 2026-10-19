@@ -26,4 +26,21 @@ describe('interaction store', () => {
     store.getState().close();
     expect(store.getState().open).toBeNull();
   });
+
+  it('shows the terminal only while a panel is open, and resets it on close or a new panel', () => {
+    const store = createInteractionStore();
+    store.getState().showTerminal(true);
+    expect(store.getState().terminal).toBe(false); // nothing open
+
+    store.getState().activate({ id: 'desk:agent-ada', label: "Ada's desk" });
+    store.getState().showTerminal(true);
+    expect(store.getState().terminal).toBe(true);
+
+    store.getState().activate({ id: 'desk:agent-rex', label: "Rex's desk" });
+    expect(store.getState().terminal).toBe(false);
+
+    store.getState().showTerminal(true);
+    store.getState().close();
+    expect(store.getState().terminal).toBe(false);
+  });
 });

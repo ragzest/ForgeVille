@@ -1,6 +1,7 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import { COLORS } from '../../ui/tokens.ts';
 import { MONO_FONT, UI_FONT } from '../../ui/fonts.ts';
+import { TERMINAL_COLORS, WINDOW_DOTS } from '../../ui/terminal.ts';
 import type { ScreenModel } from './screenModel.ts';
 
 /**
@@ -11,16 +12,7 @@ import type { ScreenModel } from './screenModel.ts';
 
 export const SCREEN_PX = { width: 640, height: 384 } as const;
 
-/** Terminal colours, a soft Dracula variant. */
-const TERM = {
-  bg: COLORS.screen,
-  bar: COLORS.screenBar,
-  fg: '#eeeef6',
-  dim: '#7a7a9a',
-  green: '#50fa7b',
-  cyan: '#8be9fd',
-  orange: '#ff9e64',
-} as const;
+const TERM = TERMINAL_COLORS;
 
 const TONES = { danger: COLORS.danger, amber: COLORS.amber, review: COLORS.review, success: COLORS.success } as const;
 
@@ -53,7 +45,7 @@ function paintTerminal(ctx: CanvasRenderingContext2D, model: ScreenModel): Paint
   const barH = 40;
   ctx.fillStyle = TERM.bar;
   ctx.fillRect(0, 0, width, barH);
-  ['#ff5f57', '#febc2e', '#28c840'].forEach((c, i) => {
+  WINDOW_DOTS.forEach((c, i) => {
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.arc(22 + i * 22, barH / 2, 7, 0, Math.PI * 2);

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { pauseSession } from '../../domain/index.ts';
+import { SCENARIO_IDS } from '../../domain/index.ts';
 import { buildScenario } from '../../services/mock/scenarios.ts';
 import { runtimeStyle } from '../../ui/runtimes.ts';
-import { SCREEN_LINES, VACANT_SCREEN, screenModel } from './screenModel.ts';
+import { SCREEN_LINES, VACANT_SCREEN, screenModel, transcriptLines } from './screenModel.ts';
 
 describe('desk screen model', () => {
   it('shows the latest transcript lines for a working agent, with a live cursor', () => {
@@ -48,5 +49,21 @@ describe('desk screen model', () => {
     expect(runtimeStyle('Pi').prompt).toBe('π');
     expect(runtimeStyle('Something new').label).toBe('Something new');
     expect(VACANT_SCREEN.mode).toBe('screensaver');
+  });
+
+  it('gives the terminal panel the whole transcript, ending on the monitor\'s last line', () => {
+    for (const id of SCENARIO_IDS) {
+      const snapshot = buildScenario(id);
+      for (const agent of snapshot.agents) {
+        const monitor = screenModel(snapshot, agent.id);
+        const panel = screenModel(snapshot, agent.id, { fullTranscript: true });
+        const session = snapshot.sessions.filter((s) => s.agentId === agent.id).at(-1) ?? null;
+        expect(panel.lines).toEqual(transcriptLines(session));
+        expect(panel.lines.at(-1)).toEqual(monitor.lines.at(-1));
+        expect(panel.lines.slice(-SCREEN_LINES)).toEqual(monitor.lines);
+        expect(panel.banner).toEqual(monitor.banner);
+        expect(panel.live).toBe(monitor.live);
+      }
+    }
   });
 });
