@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { detectWebGL, prefersReducedMotion } from './environment.ts';
+import { detectWebGL, prefersReducedMotion, replaceSearch } from './environment.ts';
 
 function fakeDocument(getContext: (id: string) => unknown): Document {
   return { createElement: () => ({ getContext }) } as unknown as Document;
@@ -38,5 +38,14 @@ describe('prefersReducedMotion', () => {
 
   it('is false when matchMedia is missing', () => {
     expect(prefersReducedMotion({} as unknown as Window)).toBe(false);
+  });
+});
+
+describe('replaceSearch', () => {
+  it('swaps the query string in place, keeping the path, hash, and history state', () => {
+    const replaceState = vi.fn();
+    const win = { location: { pathname: '/office', hash: '#top' }, history: { state: { n: 1 }, replaceState } };
+    replaceSearch('?scenario=qa-failure', win as unknown as Window);
+    expect(replaceState).toHaveBeenCalledWith({ n: 1 }, '', '/office?scenario=qa-failure#top');
   });
 });

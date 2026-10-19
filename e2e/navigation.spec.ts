@@ -73,6 +73,9 @@ test('the 2D view replaces the canvas and lists zones, team, and tasks', async (
 
 test('keyboard users reach the view and zone controls without pointer lock', async ({ page }) => {
   await ready(page);
+  // The header's scenario switcher (S09-01) comes first in reading order.
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('combobox', { name: 'Scenario' })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(toolbar(page).getByRole('button', { name: 'Walk' })).toBeFocused();
   await page.keyboard.press('Tab');

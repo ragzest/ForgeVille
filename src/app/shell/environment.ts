@@ -8,6 +8,8 @@ export interface ShellEnvironment {
   detectWebGL: () => boolean;
   /** True when the user asked the OS for reduced motion. */
   prefersReducedMotion: () => boolean;
+  /** Replaces the URL's query string without adding a history entry. Optional so tests can skip it. */
+  replaceSearch?: (search: string) => void;
 }
 
 export function detectWebGL(doc: Document = document): boolean {
@@ -32,5 +34,14 @@ export function browserEnvironment(): ShellEnvironment {
     search: window.location.search,
     detectWebGL: () => detectWebGL(),
     prefersReducedMotion: () => prefersReducedMotion(),
+    replaceSearch: (search) => {
+      replaceSearch(search);
+    },
   };
+}
+
+/** Swaps the query string in place: switching scenarios should not fill Back with history. */
+export function replaceSearch(search: string, win: Window = window): void {
+  const { pathname, hash } = win.location;
+  win.history.replaceState(win.history.state, '', `${pathname}${search}${hash}`);
 }

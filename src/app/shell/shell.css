@@ -1350,3 +1350,55 @@ kbd {
   font: 600 0.75rem/1.4 var(--fv-font);
   cursor: pointer;
 }
+
+/* Scenario switcher (S09-01) */
+.scenario-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.scenario-switcher select {
+  font: 600 0.9rem/1.2 var(--fv-font);
+  min-height: 2.25rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  border: var(--fv-border) solid var(--fv-ink);
+  background: var(--fv-paper);
+  color: var(--fv-ink);
+  cursor: pointer;
+}
+
+.scenario-switcher select:focus-visible {
+  outline: 3px solid var(--fv-accent-deep);
+  outline-offset: 2px;
+}
+
+.scenario-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  background: var(--fv-amber-soft);
+  border-bottom: var(--fv-border) solid var(--fv-ink);
+  font-size: 0.9rem;
+}
+
+.scenario-notice p {
+  margin: 0;
+  flex: 1;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
