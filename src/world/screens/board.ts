@@ -85,3 +85,17 @@ export function floorBoard(snapshot: WorkflowSnapshot, floorId: FloorId): FloorB
   const tasks = snapshot.tasks.filter((t) => t.projectId === project.id);
   return { heading: `${project.name} · task board`, columns: boardColumns({ ...snapshot, tasks }), occupied: true };
 }
+
+export interface WallNote {
+  readonly card: BoardCard;
+  /** Outlined on the wall: the overlay's selected card. */
+  readonly selected: boolean;
+}
+
+/** The notes the whiteboard paints for one column, with the selected one marked, and how many did not fit. */
+export function wallNotes(column: BoardColumn, selected: TaskId | null): { notes: WallNote[]; more: number } {
+  return {
+    notes: column.cards.slice(0, WALL_NOTES).map((card) => ({ card, selected: card.taskId === selected })),
+    more: Math.max(0, column.cards.length - WALL_NOTES),
+  };
+}

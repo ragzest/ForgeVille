@@ -104,3 +104,13 @@ describe('scenario contents', () => {
     expect(missionControlMetrics(s)).toMatchObject({ successfulMerges: 2, openPullRequests: 0 });
   });
 });
+
+describe('task details in the seed', () => {
+  it('gives every task a description and keeps at least one dependency', () => {
+    for (const id of SCENARIO_IDS) {
+      const snapshot = buildScenario(id);
+      for (const task of snapshot.tasks) expect(task.description.length, `${id} ${task.issueKey}`).toBeGreaterThan(10);
+      expect(snapshot.tasks.some((t) => t.dependsOn.length > 0)).toBe(true);
+    }
+  });
+});

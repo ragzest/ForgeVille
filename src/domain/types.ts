@@ -93,6 +93,8 @@ export interface Task {
   /** Human-facing issue key, e.g. `FV-12`. */
   readonly issueKey: string;
   readonly title: string;
+  /** A sentence or two on what the task is for. */
+  readonly description: string;
   readonly column: TaskColumn;
   /** Set while `column` is `blocked`; otherwise `null`. */
   readonly blockedFrom: BlockableColumn | null;

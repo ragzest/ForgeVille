@@ -1,6 +1,6 @@
 # S06-02 — Inspect and simulate valid moves
 
-Status: todo
+Status: done
 Epic: [E06](../epics/E06-board.md)
 Depends on: S06-01, S02-02
 

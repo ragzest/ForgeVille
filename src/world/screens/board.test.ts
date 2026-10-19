@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TASK_COLUMNS } from '../../domain/index.ts';
 import { minimalSnapshot } from '../../domain/fixtures/minimalSnapshot.ts';
 import { buildScenario } from '../../services/mock/scenarios.ts';
-import { COLUMN_NOTE, boardColumns, floorBoard } from './board.ts';
+import { COLUMN_NOTE, boardColumns, floorBoard, wallNotes } from './board.ts';
 import { boardColumns as wallColumns } from './displays.ts';
 
 describe('board view model', () => {
@@ -51,5 +51,21 @@ describe('board view model', () => {
     const vacant = floorBoard(snapshot, 'ember-forge');
     expect(vacant.occupied).toBe(false);
     expect(vacant.columns.flatMap((c) => c.cards)).toHaveLength(0);
+  });
+});
+
+describe('whiteboard notes', () => {
+  it('marks the selected card and counts the notes that do not fit', () => {
+    const base = minimalSnapshot();
+    const first = base.tasks[0];
+    if (!first) throw new Error('fixture has a task');
+    const many = Array.from({ length: 6 }, (_, i) => ({ ...first, id: `t${String(i)}`, issueKey: `FV-${String(i)}` }));
+    const col = boardColumns({ ...base, tasks: many }).find((c) => c.column === 'in_review');
+    if (!col) throw new Error('no column');
+    const { notes, more } = wallNotes(col, 't2');
+    expect(notes).toHaveLength(4);
+    expect(more).toBe(2);
+    expect(notes.filter((n) => n.selected).map((n) => n.card.taskId)).toEqual(['t2']);
+    expect(wallNotes(col, null).notes.some((n) => n.selected)).toBe(false);
   });
 });

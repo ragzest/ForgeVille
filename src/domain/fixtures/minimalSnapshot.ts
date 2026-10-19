@@ -37,6 +37,7 @@ export function minimalSnapshot(): WorkflowSnapshot {
         projectId: 'project-forgeville',
         issueKey: 'FV-1',
         title: 'Add login screen',
+        description: 'Email and password sign-in for the app.',
         column: 'in_review',
         blockedFrom: null,
         assigneeId: 'agent-ada',

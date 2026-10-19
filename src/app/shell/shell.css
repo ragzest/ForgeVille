@@ -1175,3 +1175,33 @@ kbd {
 [data-reduced-motion='true'] .board-note {
   transform: none !important;
 }
+
+/* Task detail: description, dependencies, and simulated moves. */
+.board-detail-description {
+  margin: 0 0 0.6rem;
+}
+
+.board-deps {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.board-moves-heading {
+  margin: 0.8rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.board-illegal {
+  margin-top: 0.6rem;
+}
+
+.board-illegal summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.desk-actions button.is-quiet {
+  background: var(--fv-paper);
+  color: var(--fv-ink);
+}

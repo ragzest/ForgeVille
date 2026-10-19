@@ -27,6 +27,7 @@ function task(id: string, column: Task['column'], assigneeId: string | null): Ta
     projectId: 'project-shop',
     issueKey: id.toUpperCase(),
     title: id,
+    description: '',
     column,
     blockedFrom: column === 'blocked' ? 'in_progress' : null,
     assigneeId,

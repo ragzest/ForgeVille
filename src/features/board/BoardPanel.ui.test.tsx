@@ -21,6 +21,7 @@ function twoTasks(): WorkflowSnapshot {
     projectId: 'project-forgeville',
     issueKey: 'FV-2',
     title: 'Write the README',
+    description: 'How to run the app and its tests.',
     column: 'backlog',
     blockedFrom: null,
     assigneeId: null,
@@ -121,7 +122,7 @@ describe('BoardPanel', () => {
     expect(twoDColumn('In Review')).toHaveTextContent('No tasks in In Review.');
   });
 
-  it('selecting a card shows a read-only detail and marks it on the 2D board', async () => {
+  it('selecting a card shows its detail and marks it on the 2D board', async () => {
     const user = userEvent.setup();
     renderBoard(true);
     await user.click(within(column('Backlog')).getByRole('button'));
@@ -130,7 +131,7 @@ describe('BoardPanel', () => {
     const detail = within(panel()).getByRole('region', { name: 'FV-2 · Write the README' });
     expect(detail).toHaveTextContent('Depends on');
     expect(detail).toHaveTextContent('FV-1');
-    expect(detail).toHaveTextContent('Read-only for now');
+    expect(detail).toHaveTextContent('How to run the app and its tests.');
     expect(within(screen.getByRole('region', { name: 'Board' })).getByText('FV-2').closest('li')).toHaveClass('is-selected');
 
     // Clicking it again clears the selection.

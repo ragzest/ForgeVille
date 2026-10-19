@@ -147,13 +147,23 @@ function Desk({ view, index }: { view: DeskView; index: number }) {
 }
 
 /** Whiteboard on the west wall, painted with sticky notes from the snapshot. */
-function KanbanBoard({ columns, heading, boardKey }: { columns: readonly BoardColumn[]; heading: string; boardKey: string }) {
+function KanbanBoard({
+  columns,
+  heading,
+  selected,
+  boardKey,
+}: {
+  columns: readonly BoardColumn[];
+  heading: string;
+  selected: string | null;
+  boardKey: string;
+}) {
   const { footprint } = landmark('board');
   const { materials } = useFloorScene();
   const handlers = useInteract(landmark('board'));
   const width = footprint.depth;
   const height = 1.5;
-  const texture = usePaintedTexture(boardKey, () => paintBoard(columns, heading));
+  const texture = usePaintedTexture(boardKey, () => paintBoard(columns, heading, selected));
   return (
     <group name="board" userData={{ interactiveId: 'board' }} {...handlers} position={[footprint.center.x, 1.55, footprint.center.z]} rotation-y={Math.PI / 2}>
       <Solid material={materials.trim} position={[0, 0, -0.03]} scale={[width + 0.14, height + 0.14, 0.05]} />
@@ -370,7 +380,8 @@ export interface FurnitureProps {
   desks: readonly DeskView[];
   /** Text for the reception plaque: the project, or the vacant floor's name. */
   plaque: string;
-  board: { columns: readonly BoardColumn[]; heading: string; key: string };
+  /** `selected` is the task outlined on the wall; `key` changes whenever the painted board would. */
+  board: { columns: readonly BoardColumn[]; heading: string; selected: string | null; key: string };
   qa: { display: QaDisplay; key: string };
   status: { title: string; tiles: readonly StatusTile[]; key: string };
 }
@@ -382,7 +393,7 @@ export function Furniture({ desks, plaque, board, qa, status }: FurnitureProps) 
       {desks.map((view, i) => (
         <Desk key={view.desk?.id ?? `vacant:${String(i)}`} view={view} index={i} />
       ))}
-      <KanbanBoard columns={board.columns} heading={board.heading} boardKey={board.key} />
+      <KanbanBoard columns={board.columns} heading={board.heading} selected={board.selected} boardKey={board.key} />
       <QaLab qa={qa.display} qaKey={qa.key} />
       <StatusDisplay title={status.title} tiles={status.tiles} statusKey={status.key} />
       <Reception plaque={plaque} />
