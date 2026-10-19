@@ -41,7 +41,7 @@ Status key: `todo` | `in-progress` | `done`
 | 9 | [E09](epics/E09-vertical-slice.md) | Cohesive prototype | in-progress |
 | 9.1 | [S09-01](stories/S09-01-scenario-switcher.md) | Scenario switcher across all views | done |
 | 9.2 | [S09-02](stories/S09-02-polish.md) | Visual polish, reduced motion, empty states | done |
-| 9.3 | [S09-03](stories/S09-03-e2e.md) | End-to-end walkthrough | todo |
+| 9.3 | [S09-03](stories/S09-03-e2e.md) | End-to-end walkthrough | done |
 | 9.4 | [S09-04](stories/S09-04-readme.md) | Operator README | todo |
 
 ## Milestone 0.5 — living building

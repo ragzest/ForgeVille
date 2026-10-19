@@ -24,5 +24,16 @@ test('riding to another floor re-themes the office without errors', async ({ pag
   await toolbar(page).getByRole('button', { name: '2D view' }).click();
   await page.getByRole('button', { name: 'Go to Floor 1 · Workshop' }).click();
   await expect(page.locator('.shell')).toHaveAttribute('data-floor', 'workshop');
+
+  // Back home, the team is present again: the floor chip names them and every desk is listed.
+  await expect(page.getByRole('status').filter({ hasText: 'is vacant' })).toBeHidden();
+  await expect(page.locator('.floor-chip')).toContainText('Lantern team');
+  const team = page.getByRole('region', { name: 'Team' });
+  await expect(team.getByRole('button', { name: /^Open .+'s desk$/ })).not.toHaveCount(0);
+
+  // And the 3D office draws the workshop again.
+  await toolbar(page).getByRole('button', { name: 'Walk' }).click();
+  await expect(page.getByLabel('You are on Floor 1 · Workshop')).toContainText('Lantern team');
+  await expect(page.getByTestId('office-canvas').locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
