@@ -132,7 +132,6 @@ function buildThemeMaterials(theme: FloorTheme) {
     accent: toon(theme.accent),
     accentGlow: glow(theme.accent),
     window: new MeshBasicMaterial({ color: c.glass, transparent: true, opacity: 0.22, depthWrite: false }),
-    ground: new MeshBasicMaterial({ color: c.ground }),
     city: toon(c.city),
     cityWindow: theme.sky.lampsOn ? glow(c.cityWindow) : toon(c.cityWindow),
     /** Additive pool of screen light on a desk. */

@@ -71,10 +71,11 @@ npm run test:e2e
 | **Walk** / **Overview** / **2D view** buttons | Switch between first-person, a top-down overview, and the 2D alternative |
 | Zone buttons (Reception, Developer desks, QA lab, Kanban board, Project status, Meeting area) | Travel to that zone in 3D, or select it in the 2D view |
 | Floor picker (**1 Workshop** to **4 Ember Forge**) | Ride straight to that floor |
+| **Follow the clock** | Let the sky follow the scenario time (night, dawn, noon, golden hour, dusk) instead of each floor's own mood. Off by default |
 | Elevator (walk up to it and press <kbd>E</kbd>, or click it) | Lists every floor with its theme and occupant, and takes you there |
 | **Scenario** menu | Load one of the five demo scenarios across every view |
 
-Keys are ignored while focus is in a text field or a panel that captures keys, such as the terminal. Movement keys follow physical position, so AZERTY layouts get the same layout. With reduced motion enabled in your OS, looping animation stops and state changes are instant.
+Keys are ignored while focus is in a text field or a panel that captures keys, such as the terminal. Movement keys follow physical position, so AZERTY layouts get the same layout. With reduced motion enabled in your OS, looping animation, errands, and confetti stop, and state and sky changes are instant.
 
 ## Building
 
@@ -90,6 +91,8 @@ The office is a building of four floors. They share one floor plan and differ by
 Floors 1 and 2 are occupied. Each floor shows only its own team: the desks, characters, whiteboard, QA screen, status display, and 2D lists all read that floor's slice of the one snapshot. Mission control shows the current floor next to the building totals, and the elevator lists each team's active agents and blocked tasks. Opening the desk of someone on another floor (from the mission control feed, say) offers "Go to floor N" instead.
 
 Floors 3 and 4 are vacant for now. You can ride there and walk around; the furniture is in place but nobody works there, and only the elevator is interactive.
+
+The office is lived in, but none of it is workflow. Idle agents get up now and then for a coffee at the cart, a stretch, or a chat at the meeting table, and always come back to their desk; each errand is seeded from the agent and the scenario clock, so a scenario always plays the same way. Working agents type in bursts, blocked agents sigh, and a merge throws confetti over the author's desk. Sunlit windows throw soft patches of light on the floor. All of this reads presence and never changes it.
 
 | | |
 | --- | --- |

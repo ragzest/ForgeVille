@@ -60,6 +60,10 @@ export interface SkySettings {
   readonly lampsOn: boolean;
   /** Strength of the light pool each monitor throws on its desk, 0–1. */
   readonly screenGlow: number;
+  /** Strength of the fake sunlight patches the windows throw on the floor, 0–1. 0 at night. */
+  readonly sunPatch: number;
+  /** Brightness of the unlit ground outside, 0–1: 1 shows the palette as painted, lower dims it for night. */
+  readonly outdoorShade: number;
 }
 
 export interface FloorTheme {
@@ -130,6 +134,8 @@ export const FLOOR_THEMES: Readonly<Record<FloorThemeId, FloorTheme>> = {
       stars: false,
       lampsOn: false,
       screenGlow: 0.25,
+      sunPatch: 0.3,
+      outdoorShade: 1,
     },
   },
   greenhouse: {
@@ -181,6 +187,8 @@ export const FLOOR_THEMES: Readonly<Record<FloorThemeId, FloorTheme>> = {
       stars: false,
       lampsOn: false,
       screenGlow: 0.2,
+      sunPatch: 0.26,
+      outdoorShade: 1,
     },
   },
   'night-studio': {
@@ -232,6 +240,8 @@ export const FLOOR_THEMES: Readonly<Record<FloorThemeId, FloorTheme>> = {
       stars: true,
       lampsOn: true,
       screenGlow: 0.6,
+      sunPatch: 0,
+      outdoorShade: 1,
     },
   },
   'ember-forge': {
@@ -283,6 +293,8 @@ export const FLOOR_THEMES: Readonly<Record<FloorThemeId, FloorTheme>> = {
       stars: false,
       lampsOn: true,
       screenGlow: 0.4,
+      sunPatch: 0.32,
+      outdoorShade: 1,
     },
   },
 };

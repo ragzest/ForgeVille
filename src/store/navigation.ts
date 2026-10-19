@@ -21,6 +21,8 @@ export interface NavigationState {
   readonly travel: { readonly zone: ZoneId; readonly seq: number } | null;
   /** Task picked with "Inspect task", for the board to highlight. */
   readonly selectedTaskId: TaskId | null;
+  /** "Follow the clock": the sky follows the scenario time instead of each floor's mood. Off by default. */
+  readonly followClock: boolean;
   readonly setView: (view: OfficeView) => void;
   /** Highlights a zone without moving the player (the 2D list). */
   readonly selectZone: (zone: ZoneId) => void;
@@ -29,6 +31,7 @@ export interface NavigationState {
   readonly selectTask: (taskId: TaskId | null) => void;
   /** Rides the elevator: same spot in the floor plan, different floor. */
   readonly goToFloor: (floor: FloorId) => void;
+  readonly setFollowClock: (on: boolean) => void;
 }
 
 export const INITIAL_NAVIGATION = {
@@ -37,6 +40,7 @@ export const INITIAL_NAVIGATION = {
   selectedZone: null,
   travel: null,
   selectedTaskId: null,
+  followClock: false,
 } as const;
 
 export function createNavigationStore() {
@@ -57,6 +61,9 @@ export function createNavigationStore() {
     },
     goToFloor: (floor) => {
       if (get().floor !== floor) set({ floor });
+    },
+    setFollowClock: (on) => {
+      if (get().followClock !== on) set({ followClock: on });
     },
   }));
 }

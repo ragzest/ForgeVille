@@ -29,6 +29,8 @@ export function NavigationToolbar({ webgl }: Props) {
   const selectZone = useNavigation((s) => s.selectZone);
   const floor = useNavigation((s) => s.floor);
   const goToFloor = useNavigation((s) => s.goToFloor);
+  const followClock = useNavigation((s) => s.followClock);
+  const setFollowClock = useNavigation((s) => s.setFollowClock);
 
   return (
     <nav className="nav-toolbar" aria-label="Office navigation">
@@ -85,6 +87,20 @@ export function NavigationToolbar({ webgl }: Props) {
           </button>
         ))}
       </div>
+      {webgl && (
+        <div className="nav-group" role="group" aria-label="Light">
+          <button
+            type="button"
+            aria-pressed={followClock}
+            title="Let the sky follow the scenario clock instead of each floor's own mood"
+            onClick={() => {
+              setFollowClock(!followClock);
+            }}
+          >
+            Follow the clock
+          </button>
+        </div>
+      )}
     </nav>
   );
 }

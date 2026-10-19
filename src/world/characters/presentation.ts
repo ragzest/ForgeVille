@@ -9,8 +9,8 @@ export type Pose = 'typing' | 'leaning-back' | 'slumped' | 'arms-crossed' | 'rea
 /** A shape floating above the head. `none` for states that need no alert. */
 export type Mark = 'none' | 'stop-sign' | 'hourglass' | 'magnifier' | 'star';
 
-/** A short in-place loop. Reduced motion always uses `none`. */
-export type Motion = 'none' | 'typing' | 'sway' | 'bounce';
+/** A short in-place loop. Reduced motion always uses `none`. Typing comes in bursts; a blocked agent sighs now and then. */
+export type Motion = 'none' | 'typing' | 'sway' | 'bounce' | 'sigh';
 
 export type MarkTone = 'none' | 'danger' | 'amber' | 'review' | 'success';
 
@@ -26,7 +26,7 @@ export interface PresenceLook {
 const LOOKS: Readonly<Record<AgentPresence, PresenceLook>> = {
   working: { pose: 'typing', mark: 'none', tone: 'none', label: '', motion: 'typing' },
   idle: { pose: 'leaning-back', mark: 'none', tone: 'none', label: '', motion: 'sway' },
-  blocked: { pose: 'slumped', mark: 'stop-sign', tone: 'danger', label: 'Blocked', motion: 'none' },
+  blocked: { pose: 'slumped', mark: 'stop-sign', tone: 'danger', label: 'Blocked', motion: 'sigh' },
   awaiting_review: { pose: 'arms-crossed', mark: 'hourglass', tone: 'amber', label: 'Awaiting review', motion: 'none' },
   reviewing: { pose: 'reading', mark: 'magnifier', tone: 'review', label: 'Reviewing', motion: 'none' },
 };
@@ -43,6 +43,28 @@ export function presenceLook(presence: AgentPresence, { celebrating, reducedMoti
   // Celebration only covers an otherwise calm agent; it never hides a blocker or a review.
   const base = celebrating && (presence === 'idle' || presence === 'working') ? CELEBRATING : LOOKS[presence];
   return reducedMotion ? { ...base, motion: 'none' } : base;
+}
+
+/** Seconds between sighs, and how long one lasts. */
+export const SIGH_EVERY = 6;
+export const SIGH_LENGTH = 1.6;
+
+/**
+ * How far into a sigh the agent is at time `t`: 0 at rest, rising to 1 as the
+ * shoulders lift (the breath in), then falling back (the slump out).
+ */
+export function sighAmount(t: number): number {
+  const into = ((t % SIGH_EVERY) + SIGH_EVERY) % SIGH_EVERY;
+  if (into >= SIGH_LENGTH) return 0;
+  return Math.sin((into / SIGH_LENGTH) * Math.PI) ** 2;
+}
+
+/**
+ * Typing comes in bursts: a few seconds of keys, a pause to think. True while
+ * the hands are on the keys. Two slow waves out of step make the rhythm uneven.
+ */
+export function typingBurst(t: number): boolean {
+  return Math.sin(t * 0.8) + Math.sin(t * 2.1) * 0.6 > -0.35;
 }
 
 /** Accessory that gives each avatar its own silhouette. */

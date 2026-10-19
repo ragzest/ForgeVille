@@ -131,3 +131,25 @@ describe('ControlHint in overview', () => {
     expect(screen.getByText(/Overview: movement is paused/)).toBeInTheDocument();
   });
 });
+
+describe('Follow the clock', () => {
+  it('is off by default and toggles the clock-driven sky', async () => {
+    const user = userEvent.setup();
+    render(<NavigationToolbar webgl />);
+    const toggle = within(screen.getByRole('group', { name: 'Light' })).getByRole('button', { name: 'Follow the clock' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(navigationStore.getState().followClock).toBe(false);
+
+    await user.click(toggle);
+    expect(navigationStore.getState().followClock).toBe(true);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(toggle);
+    expect(navigationStore.getState().followClock).toBe(false);
+  });
+
+  it('is not offered without the 3D office', () => {
+    render(<NavigationToolbar webgl={false} />);
+    expect(screen.queryByRole('button', { name: 'Follow the clock' })).toBeNull();
+  });
+});

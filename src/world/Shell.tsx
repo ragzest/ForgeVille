@@ -84,8 +84,8 @@ function Floor() {
 }
 
 function Ceiling() {
-  const { materials, floor } = useFloorScene();
-  const lampsOn = floor.theme.sky.lampsOn;
+  const { materials, sky } = useFloorScene();
+  const lampsOn = sky.lampsOn;
   return (
     <group name="ceiling">
       {/* Faces down: invisible from the overview camera above. */}

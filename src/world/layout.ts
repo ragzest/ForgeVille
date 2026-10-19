@@ -318,6 +318,9 @@ export const QA_STATION = { width: 1.8, depth: 0.8, height: 0.75 } as const;
 
 export const MEETING_TABLE = { center: { x: -8, z: 5.5 }, radius: 1.1, height: 0.74, chairs: 6 } as const;
 
+/** A coffee cart against the south wall, between the status display and reception. Idle agents walk here. */
+export const COFFEE_CART = { center: { x: 3.9, z: 7.55 }, width: 0.9, depth: 0.5, height: 0.9 } as const;
+
 /** Potted plants: under the north windows and in a few corners. */
 export const PLANTS: readonly Point2[] = [
   { x: -6.4, z: -6.9 },
@@ -371,7 +374,8 @@ export function playerColliders(): Box2[] {
     maxZ: MEETING_TABLE.center.z + table,
   };
   const plants = PLANTS.map((p) => boxOf({ center: p, width: PLANT_SIZE, depth: PLANT_SIZE }));
-  return [...WALL_COLLIDERS, ...desks, ...stations, ...landmarks, meeting, ...plants];
+  const coffee = boxOf(COFFEE_CART);
+  return [...WALL_COLLIDERS, ...desks, ...stations, ...landmarks, meeting, coffee, ...plants];
 }
 
 /** Zones offered for travel, in toolbar order. Greenery is decoration only. */
