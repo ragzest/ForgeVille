@@ -10,8 +10,8 @@ export function openBoard(): void {
 }
 
 /**
- * Whose board to show from a floor: its own when a project works there,
- * otherwise the first occupied floor's (the 2D view lists that team too).
+ * Whose records the panels and 2D lists show from a floor: its own when a
+ * project works there, otherwise the first occupied floor's (the 2D view says so).
  */
 export function boardFloor(snapshot: WorkflowSnapshot, floorId: FloorId): FloorId {
   if (occupantOf(snapshot, floorId)) return floorId;

@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { buildScenario } from '../../services/mock/scenarios.ts';
 import { createWorkflowStore } from '../../store/workflowStore.ts';
+import { floorSnapshot } from '../building.ts';
 import { characterModels } from './models.ts';
 
 const byName = (models: ReturnType<typeof characterModels>) => Object.fromEntries(models.map((m) => [m.name, m.look]));
 
 describe('characterModels', () => {
-  it('gives every seeded agent a character at their desk', () => {
-    const models = characterModels(buildScenario('feature-in-progress'), false);
-    expect(models.map((m) => m.agentId)).toEqual(buildScenario('feature-in-progress').agents.map((a) => a.id));
+  it('gives every agent on the floor a character at their desk', () => {
+    const floor = floorSnapshot(buildScenario('feature-in-progress'), 'workshop');
+    const models = characterModels(floor, false);
+    expect(models.map((m) => m.agentId)).toEqual(floor.agents.map((a) => a.id));
     expect(new Set(models.map((m) => m.accessory)).size).toBe(models.length);
   });
 

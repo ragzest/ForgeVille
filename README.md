@@ -82,12 +82,14 @@ The office is a building of four floors. They share one floor plan and differ by
 
 | Floor | Theme | Look | Today |
 | --- | --- | --- | --- |
-| 1 | Workshop | Honey oak and morning sun | The Lantern team works here |
-| 2 | Greenhouse | Birch, sage, and far too many plants | Vacant |
+| 1 | Workshop | Honey oak and morning sun | The Lantern team works here (seven agents) |
+| 2 | Greenhouse | Birch, sage, and far too many plants | The Sprout team works here (four agents) |
 | 3 | Night Studio | Walnut, indigo, and warm desk lamps | Vacant |
 | 4 | Ember Forge | Copper, concrete, and a golden-hour sky | Vacant |
 
-Floors 2 to 4 are vacant for now. You can ride there and walk around; the furniture is in place but nobody works there, and only the elevator is interactive.
+Floors 1 and 2 are occupied. Each floor shows only its own team: the desks, characters, whiteboard, QA screen, status display, and 2D lists all read that floor's slice of the one snapshot. Mission control shows the current floor next to the building totals, and the elevator lists each team's active agents and blocked tasks. Opening the desk of someone on another floor (from the mission control feed, say) offers "Go to floor N" instead.
+
+Floors 3 and 4 are vacant for now. You can ride there and walk around; the furniture is in place but nobody works there, and only the elevator is interactive.
 
 | | |
 | --- | --- |

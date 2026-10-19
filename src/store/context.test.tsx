@@ -16,7 +16,7 @@ describe('workflow store in React', () => {
         <AgentCount />
       </WorkflowProvider>,
     );
-    expect(screen.getByText('7 agents')).toBeInTheDocument();
+    expect(screen.getByText('11 agents')).toBeInTheDocument();
   });
 
   it('uses a store passed in', () => {

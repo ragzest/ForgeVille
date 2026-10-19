@@ -4,6 +4,9 @@ import { useInteraction } from '../../store/interaction.ts';
 import { BoardPanel } from '../board/BoardPanel.tsx';
 import { PullRequestPanel } from '../qa/PullRequestPanel.tsx';
 import { ElevatorPanel } from '../building/ElevatorPanel.tsx';
+import { OtherFloorPanel } from '../building/OtherFloorPanel.tsx';
+import { useNavigation } from '../../store/navigation.ts';
+import { floorOfAgent } from '../../world/building.ts';
 import { DeskPanel } from '../desks/DeskPanel.tsx';
 import { MissionControlPanel } from '../mission-control/MissionControlPanel.tsx';
 import { STATUS_TARGET } from '../mission-control/missionControl.ts';
@@ -22,19 +25,29 @@ function PerScenario({ children }: { children: ReactNode }) {
   return <Fragment key={scenarioId}>{children}</Fragment>;
 }
 
+/**
+ * A desk on this floor opens its panel. A desk on another floor offers the
+ * ride instead, since the visitor is not in that room. An unknown agent gets
+ * the desk panel, which says so.
+ */
+function DeskRoute({ agentId, title }: { agentId: string; title: string }) {
+  const floorId = useNavigation((s) => s.floor);
+  const agentFloor = useWorkflow((s) => floorOfAgent(s.snapshot, agentId)?.id ?? null);
+  if (agentFloor !== null && agentFloor !== floorId) return <OtherFloorPanel key={agentId} agentId={agentId} />;
+  return (
+    <PerScenario>
+      <DeskPanel key={agentId} agentId={agentId} title={title} />
+    </PerScenario>
+  );
+}
+
 /** The activated object's panel: the desk panel, or a placeholder until that object's story lands. */
 export function InteractionPanel() {
   const open = useInteraction((s) => s.open);
   const close = useInteraction((s) => s.close);
   if (!open) return null;
   const agentId = agentIdFromDesk(open.id);
-  if (agentId !== null) {
-    return (
-      <PerScenario>
-        <DeskPanel key={agentId} agentId={agentId} title={open.label} />
-      </PerScenario>
-    );
-  }
+  if (agentId !== null) return <DeskRoute agentId={agentId} title={open.label} />;
   if (open.id === 'elevator') return <ElevatorPanel title={open.label} />;
   if (open.id === 'board') {
     return (

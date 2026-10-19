@@ -37,3 +37,30 @@ test('riding to another floor re-themes the office without errors', async ({ pag
   await expect(page.getByTestId('office-canvas').locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('floor 2 has its own team in the 2D roster, and the elevator summarises both teams', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('[data-shell-status="ready"]')).toBeVisible({ timeout: 30_000 });
+
+  await toolbar(page).getByRole('button', { name: 'Floor 2 · Greenhouse' }).click();
+  await expect(page.getByLabel('You are on Floor 2 · Greenhouse')).toContainText('Sprout team');
+
+  await toolbar(page).getByRole('button', { name: '2D view' }).click();
+  const team = page.getByRole('region', { name: 'Team' });
+  await expect(team).toContainText('Sprout team · Floor 2 · Greenhouse');
+  await expect(team.getByRole('button', { name: /^Open .+'s desk$/ })).toHaveCount(4);
+  await expect(team.getByRole('button', { name: "Open Hana's desk" })).toBeVisible();
+  await expect(team.getByRole('button', { name: "Open Ada's desk" })).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Board' })).toContainText('SP-1');
+  await expect(page.getByRole('region', { name: 'Board' })).not.toContainText('LN-2');
+
+  // An event about someone downstairs offers the ride instead of their desk.
+  await page.getByRole('button', { name: 'Open mission control' }).click();
+  const mission = page.getByRole('dialog', { name: 'Mission control' });
+  await expect(mission.getByRole('heading', { name: /This floor/ })).toContainText('Sprout team');
+  await mission.getByRole('button', { name: "Open Ada's desk" }).click();
+  const away = page.getByRole('dialog', { name: "Ada's desk" });
+  await away.getByRole('button', { name: 'Go to floor 1' }).click();
+  await expect(page.locator('.shell')).toHaveAttribute('data-floor', 'workshop');
+  await expect(page.getByRole('dialog', { name: "Ada's desk" })).toContainText('Agent id');
+});

@@ -1,6 +1,6 @@
 # E10 — Living building
 
-Status: todo
+Status: in-progress
 
 ## Outcome
 

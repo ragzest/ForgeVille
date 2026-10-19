@@ -3,6 +3,9 @@ import { mergeEligibilityFor } from '../../domain/index.ts';
 import { COLUMN_LABELS } from '../../domain/index.ts';
 import { useInteraction } from '../../store/interaction.ts';
 import { useWorkflow } from '../../store/context.ts';
+import { useNavigation } from '../../store/navigation.ts';
+import { floorSnapshot } from '../../world/building.ts';
+import { boardFloor } from '../board/openBoard.ts';
 import { CHECK_STATUS, focusPullRequest } from '../../world/screens/qa.ts';
 import { clockTime } from '../desks/deskDetails.ts';
 import { REVIEW_TEXT, pullRequestDetail } from './prDetail.ts';
@@ -26,8 +29,11 @@ export function PullRequestPanel({ title }: { title: string }) {
   const snapshot = useWorkflow((s) => s.snapshot);
   const close = useInteraction((s) => s.close);
   const [chosen, setChosen] = useState<string | null>(null);
-  const prs = [...snapshot.pullRequests].sort((a, b) => b.number - a.number);
-  const prId = chosen ?? focusPullRequest(snapshot)?.id ?? null;
+  const floorId = useNavigation((s) => s.floor);
+  // Only this floor's pull requests, like the wall screen.
+  const here = floorSnapshot(snapshot, boardFloor(snapshot, floorId));
+  const prs = [...here.pullRequests].sort((a, b) => b.number - a.number);
+  const prId = chosen ?? focusPullRequest(here)?.id ?? null;
   const detail = prId ? pullRequestDetail(snapshot, prId) : null;
 
   return (

@@ -8,3 +8,4 @@ export * from './qa.ts';
 export * from './metrics.ts';
 export * from './sessions.ts';
 export * from './clock.ts';
+export * from './projects.ts';
