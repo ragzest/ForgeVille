@@ -1,4 +1,6 @@
+import { interactionStore } from '../../store/interaction.ts';
 import { useNavigation, type OfficeView } from '../../store/navigation.ts';
+import { FLOORS, floorTitle } from '../../world/building.ts';
 import { TRAVEL_ZONES, zoneById } from '../../world/layout.ts';
 
 interface Props {
@@ -22,6 +24,8 @@ export function NavigationToolbar({ webgl }: Props) {
   const setView = useNavigation((s) => s.setView);
   const travelTo = useNavigation((s) => s.travelTo);
   const selectZone = useNavigation((s) => s.selectZone);
+  const floor = useNavigation((s) => s.floor);
+  const goToFloor = useNavigation((s) => s.goToFloor);
 
   return (
     <nav className="nav-toolbar" aria-label="Office navigation">
@@ -47,6 +51,28 @@ export function NavigationToolbar({ webgl }: Props) {
             }}
           >
             {zoneById(id).label}
+          </button>
+        ))}
+      </div>
+      <div className="nav-group nav-floors" role="group" aria-label="Floor">
+        {FLOORS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            className="floor-button"
+            aria-pressed={floor === f.id}
+            aria-label={floorTitle(f)}
+            title={floorTitle(f)}
+            style={{ '--floor-accent': f.theme.accent } as React.CSSProperties}
+            onClick={() => {
+              if (floor === f.id) return;
+              // A panel from the old floor makes no sense on the new one.
+              interactionStore.getState().close();
+              goToFloor(f.id);
+            }}
+          >
+            <span className="floor-button-level">{f.level}</span>
+            <span className="floor-button-name">{f.theme.name}</span>
           </button>
         ))}
       </div>

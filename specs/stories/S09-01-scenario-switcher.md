@@ -15,6 +15,7 @@ As a demo host, I want to switch scenarios and see the office, board, QA panel, 
 - `?scenario=` loads that scenario on startup and is updated when the user switches, so tests can deep-link.
 - Unknown scenario ids fall back to the default scenario and show a non-blocking notice.
 - No view keeps a private copy of tasks or agents after the switch.
+- Switching scenario keeps the current floor. Monitors, whiteboard, QA screen, and status display repaint from the new snapshot.
 
 ## Verification
 

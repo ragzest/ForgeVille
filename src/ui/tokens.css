@@ -1,5 +1,14 @@
-/* Non-colour tokens. Colours come from src/ui/tokens.ts via applyColorTokens. */
+/* Non-colour tokens, and the default floor accent. Colours come from src/ui/tokens.ts via applyColorTokens; floors override the accent. */
 :root {
-  --fv-radius: 12px;
-  --fv-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fv-radius: 14px;
+  --fv-border: 3px;
+  --fv-border-thick: 4px;
+  --fv-font: 'Fredoka Variable', 'Fredoka', ui-rounded, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fv-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --fv-accent: #4fb3e8;
+  --fv-accent-deep: #2a7fb0;
+  --fv-on-accent: #0d2233;
+  --fv-accent-soft: #d8effb;
+  --fv-sky-top: #8ccaf5;
+  --fv-sky-bottom: #ffe6c7;
 }

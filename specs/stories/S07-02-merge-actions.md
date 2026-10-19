@@ -15,6 +15,7 @@ As a reviewer, I want merge and request-changes to call the mock policy so I can
 - Request changes calls the port, shows the finding, and returns the task to In Progress.
 - The success scenario can merge. The failing-test scenario cannot merge until checks pass. Do not add a hidden "force merge".
 - Action buttons are keyboard accessible and have disabled states that still expose the reason.
+- A permitted merge shows the author's existing celebration (star and "Merged!") and updates the QA screen and status display in the same render. A short confetti burst may be added at the author's desk. It is presentation only and is off under reduced motion.
 
 ## Verification
 

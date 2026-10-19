@@ -3,6 +3,10 @@ import { bootShell, type BootResult, type ShellStatus } from './boot.ts';
 import { browserEnvironment, type ShellEnvironment } from './environment.ts';
 import { PreferencesContext, type ShellPreferences } from './preferences.ts';
 import { InteractionPanel } from '../../features/navigation/InteractionPanel.tsx';
+import { useNavigation } from '../../store/navigation.ts';
+import { useWorkflow } from '../../store/context.ts';
+import { themeCssVars } from '../../ui/themes.ts';
+import { floorById, floorTitle, occupantOf } from '../../world/building.ts';
 import { ErrorView, FallbackView, LoadingView, OfficeView } from './ShellViews.tsx';
 
 interface AppShellProps {
@@ -41,15 +45,37 @@ export function AppShell({ environment }: AppShellProps) {
     setState({ status: 'error', message });
   }, []);
 
+  // The page chrome takes the current floor's accent.
+  const floor = floorById(useNavigation((s) => s.floor));
+  const occupant = useWorkflow((s) => occupantOf(s.snapshot, floor.id)?.name ?? null);
+
   // Ready only once the canvas has mounted.
   const status: ShellStatus = state.status === 'ready' && !officeMounted ? 'loading' : state.status;
 
   return (
     <PreferencesContext.Provider value={preferences}>
-      <div className="shell" data-shell-status={status} data-reduced-motion={preferences.reducedMotion}>
+      <div
+        className="shell"
+        data-shell-status={status}
+        data-reduced-motion={preferences.reducedMotion}
+        data-floor={floor.id}
+        style={themeCssVars(floor.theme)}
+      >
         <header className="shell-header">
-          <h1>ForgeVille</h1>
-          <p className="shell-tag">Simulated office. Nothing here runs real agents.</p>
+          <h1>
+            <span className="brand-mark" aria-hidden="true">
+              ✻
+            </span>
+            ForgeVille
+          </h1>
+          <p className="floor-chip" aria-label={`You are on ${floorTitle(floor)}`}>
+            <span className="floor-chip-level">{floor.level}</span>
+            {floor.theme.name}
+            <span className="floor-chip-occupant">{occupant ? `${occupant} team` : 'Vacant'}</span>
+          </p>
+          <p className="shell-tag">
+            <span className="sim-tag">Simulated</span> Nothing here runs real agents.
+          </p>
         </header>
         <main className="shell-main" aria-busy={status === 'loading'}>
           {state.status === 'loading' && <LoadingView />}

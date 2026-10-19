@@ -8,7 +8,7 @@ This repository currently holds the product brief, architecture boundaries, and 
 
 A local, simulated software company you can walk through:
 
-- one compact office floor
+- a small building of themed floors (one occupied by the demo team)
 - mock agents at desks
 - a Kanban board, QA lab, and pull-request review area
 - mission control derived from the same mock state

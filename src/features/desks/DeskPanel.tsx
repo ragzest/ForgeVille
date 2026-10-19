@@ -2,6 +2,7 @@ import { COLUMN_LABELS } from '../../domain/index.ts';
 import { useInteraction } from '../../store/interaction.ts';
 import { useNavigation } from '../../store/navigation.ts';
 import { useWorkflow } from '../../store/context.ts';
+import { runtimeStyle } from '../../ui/runtimes.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
 import { clockTime, deskDetails, deskId, timeAgo } from './deskDetails.ts';
 
@@ -56,7 +57,10 @@ export function DeskPanel({ agentId, title }: { agentId: string; title: string }
             <dt>Branch</dt>
             <dd>{details.task?.branch ? <code>{details.task.branch}</code> : '—'}</dd>
             <dt>Runtime</dt>
-            <dd>{details.agent.runtimeLabel}</dd>
+            <dd>
+              <span className="runtime-dot" style={{ background: runtimeStyle(details.agent.runtimeLabel).accent }} aria-hidden="true" />
+              {details.agent.runtimeLabel}
+            </dd>
             <dt>Model</dt>
             <dd>{details.agent.modelLabel}</dd>
             <dt>Avatar</dt>

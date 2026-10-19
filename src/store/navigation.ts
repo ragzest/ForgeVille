@@ -1,6 +1,7 @@
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import type { TaskId } from '../domain/index.ts';
+import { DEFAULT_FLOOR, type FloorId } from '../world/building.ts';
 import type { ZoneId } from '../world/layout.ts';
 
 /**
@@ -12,6 +13,8 @@ export type OfficeView = 'walk' | 'overview' | '2d';
 
 export interface NavigationState {
   readonly view: OfficeView;
+  /** Which floor of the building the visitor is on. */
+  readonly floor: FloorId;
   /** Zone last picked from a zone list, for highlighting. */
   readonly selectedZone: ZoneId | null;
   /** Latest travel request; `seq` lets the rig tell repeat requests apart. */
@@ -24,9 +27,17 @@ export interface NavigationState {
   /** Selects a zone and walks the player to its anchor in the 3D office. */
   readonly travelTo: (zone: ZoneId) => void;
   readonly selectTask: (taskId: TaskId | null) => void;
+  /** Rides the elevator: same spot in the floor plan, different floor. */
+  readonly goToFloor: (floor: FloorId) => void;
 }
 
-export const INITIAL_NAVIGATION = { view: 'walk', selectedZone: null, travel: null, selectedTaskId: null } as const;
+export const INITIAL_NAVIGATION = {
+  view: 'walk',
+  floor: DEFAULT_FLOOR,
+  selectedZone: null,
+  travel: null,
+  selectedTaskId: null,
+} as const;
 
 export function createNavigationStore() {
   return createStore<NavigationState>()((set, get) => ({
@@ -43,6 +54,9 @@ export function createNavigationStore() {
     },
     selectTask: (taskId) => {
       if (get().selectedTaskId !== taskId) set({ selectedTaskId: taskId });
+    },
+    goToFloor: (floor) => {
+      if (get().floor !== floor) set({ floor });
     },
   }));
 }

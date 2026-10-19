@@ -21,6 +21,7 @@ Status key: `todo` | `in-progress` | `done`
 | 3.1 | [S03-01](stories/S03-01-office-shell.md) | Lit office shell and zone layout | done |
 | 3.2 | [S03-02](stories/S03-02-furnishings.md) | Desks, board, QA corner, meeting area | done |
 | 3.3 | [S03-03](stories/S03-03-characters.md) | Characters bound to agent presence | done |
+| 3.4 | [S03-04](stories/S03-04-themed-floors.md) | Themed floors, cel-shaded look, live displays | done |
 | 4 | [E04](epics/E04-navigation.md) | Movement and navigation | done |
 | 4.1 | [S04-01](stories/S04-01-player-controls.md) | Walk, look, run, pointer lock | done |
 | 4.2 | [S04-02](stories/S04-02-interact.md) | Proximity interaction and hints | done |
@@ -42,6 +43,17 @@ Status key: `todo` | `in-progress` | `done`
 | 9.2 | [S09-02](stories/S09-02-polish.md) | Visual polish, reduced motion, empty states | todo |
 | 9.3 | [S09-03](stories/S09-03-e2e.md) | End-to-end walkthrough | todo |
 | 9.4 | [S09-04](stories/S09-04-readme.md) | Operator README | todo |
+
+## Milestone 0.5 — living building
+
+Starts after E09. It adds delight on top of a complete floor and never changes workflow rules.
+
+| Order | Id | Title | Status |
+| --- | --- | --- | --- |
+| 10 | [E10](epics/E10-living-building.md) | Living building | todo |
+| 10.1 | [S10-01](stories/S10-01-multi-project-floors.md) | Multi-project floors | todo |
+| 10.2 | [S10-02](stories/S10-02-day-and-ambient-life.md) | Time of day and ambient life | todo |
+| 10.3 | [S10-03](stories/S10-03-quality-tiers.md) | Quality tiers and screen glow | todo |
 
 ## Milestone 1 — not started
 

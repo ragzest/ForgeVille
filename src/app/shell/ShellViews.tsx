@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
+import { FloorBanner } from '../../features/building/FloorBanner.tsx';
 import { ControlHint } from '../../features/navigation/ControlHint.tsx';
+import { fontsReady } from '../../ui/fonts.ts';
 import { InteractHint } from '../../features/navigation/InteractHint.tsx';
 import { NavigationToolbar } from '../../features/navigation/NavigationToolbar.tsx';
 import { TwoDView } from '../../features/navigation/TwoDView.tsx';
@@ -15,7 +17,12 @@ interface ErrorViewProps {
 export function LoadingView() {
   return (
     <div className="shell-panel" role="status" aria-live="polite">
-      <p>Starting ForgeVille…</p>
+      <p className="loading-line">
+        <span className="loading-spinner" aria-hidden="true">
+          ✻
+        </span>
+        Starting ForgeVille…
+      </p>
     </div>
   );
 }
@@ -32,7 +39,8 @@ export function ErrorView({ message, onRetry }: ErrorViewProps) {
   );
 }
 
-const OfficeCanvas = lazy(() => import('../../world/OfficeCanvas.tsx'));
+// Signs and screens are painted once, so wait (briefly) for the bundled fonts first.
+const OfficeCanvas = lazy(() => Promise.all([import('../../world/OfficeCanvas.tsx'), fontsReady()]).then(([module]) => module));
 
 interface OfficeViewProps {
   mounted: boolean;
@@ -63,6 +71,7 @@ export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeV
               </Suspense>
             </CanvasErrorBoundary>
           </div>
+          {mounted && <FloorBanner />}
           {mounted && <InteractHint />}
           {mounted && <ControlHint />}
           {!mounted && (

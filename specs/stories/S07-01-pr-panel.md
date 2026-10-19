@@ -16,6 +16,7 @@ As a reviewer, I want a pull-request panel from the QA screen so I can see branc
 - Passing and failing scenarios render different statuses from data.
 - Status uses text and icon as well as color.
 - Blocked merge reasons are visible before the user clicks merge, when the policy would refuse.
+- The QA wall screen already shows the newest open pull request's checks through `qaDisplay` (S03-04). The panel's check rows must use the same status words and icons (✓ Passed, ✕ Failed, ◐ Running, … Queued).
 
 ## Verification
 

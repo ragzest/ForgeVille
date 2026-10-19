@@ -6,7 +6,7 @@ Status: accepted for milestone 0 (simulated prototype).
 
 ForgeVille should feel like a living software company, not an admin dashboard with a 3D background.
 
-The user walks a cozy low-poly office, approaches agent desks, inspects work, visits the Kanban board, and reviews pull requests in a QA lab. The experience is playful. The information design stays professional.
+The user walks a cozy, cel-shaded office building. Each floor has its own theme and time of day. The user approaches agent desks, reads each agent's simulated terminal on its monitor, visits the Kanban board, and reviews pull requests in a QA lab. The experience is playful. The information design stays professional.
 
 Every view in this milestone prepares later integration with real agent sessions, GitHub events, tests, and build results. This milestone does not perform those integrations.
 
@@ -24,7 +24,8 @@ A locally runnable prototype where:
 ## In scope
 
 - React, TypeScript, Vite application shell
-- Three.js office via React Three Fiber and Drei
+- Three.js office via React Three Fiber and Drei, cel-shaded with ink outlines
+- A building of four themed floors. Projects occupy floors from the ground up; empty floors are vacant but walkable
 - Responsive overlay UI
 - Typed mock domain and deterministic scenarios
 - Vitest unit tests and one Playwright walkthrough
