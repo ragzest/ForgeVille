@@ -1,6 +1,6 @@
 # S07-01 — Pull-request detail panel
 
-Status: todo
+Status: done
 Epic: [E07](../epics/E07-qa-pr.md)
 Depends on: S04-02, S02-03, S02-05
 

@@ -1,14 +1,12 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import {
-  REQUIRED_CHECKS,
   missionControlMetrics,
-  type CheckKind,
-  type TestRunStatus,
   type WorkflowSnapshot,
 } from '../../domain/index.ts';
 import { MONO_FONT, UI_FONT } from '../../ui/fonts.ts';
 import { COLORS } from '../../ui/tokens.ts';
 import { COLUMN_NOTE, wallNotes, type BoardColumn } from './board.ts';
+import { CHECK_STATUS, type QaDisplay } from './qa.ts';
 
 /**
  * In-world displays: the Kanban whiteboard, the QA screen, and the project
@@ -25,31 +23,7 @@ export { COLUMN_NOTE, WALL_NOTES, boardColumns, type BoardCard, type BoardColumn
 // ---------------------------------------------------------------------------
 // QA screen
 
-export interface QaRow {
-  readonly check: CheckKind;
-  readonly label: string;
-  readonly status: TestRunStatus | 'not_run';
-}
-
-export interface QaDisplay {
-  /** e.g. `PR #2 · Add-to-list button`, or null when no pull request is open. */
-  readonly heading: string | null;
-  readonly rows: readonly QaRow[];
-}
-
-const CHECK_LABEL: Readonly<Record<CheckKind, string>> = { unit: 'Unit tests', build: 'Build', browser: 'Browser tests' };
-
-/** The newest open pull request's required checks, or the newest pull request when none is open. */
-export function qaDisplay(snapshot: WorkflowSnapshot): QaDisplay {
-  const prs = [...snapshot.pullRequests].sort((a, b) => b.number - a.number);
-  const pr = prs.find((p) => p.state === 'open') ?? prs[0];
-  if (!pr) return { heading: null, rows: [] };
-  const rows = REQUIRED_CHECKS.map((check) => {
-    const runs = snapshot.testRuns.filter((r) => r.pullRequestId === pr.id && r.check === check);
-    return { check, label: CHECK_LABEL[check], status: runs.at(-1)?.status ?? ('not_run' as const) };
-  });
-  return { heading: `PR #${String(pr.number)} · ${pr.title}${pr.state === 'merged' ? ' (merged)' : ''}`, rows };
-}
+export { CHECK_STATUS, qaDisplay, type QaDisplay, type QaRow } from './qa.ts';
 
 // ---------------------------------------------------------------------------
 // Status display
@@ -189,13 +163,6 @@ export function paintBoard(columns: readonly BoardColumn[], heading: string, sel
   return done(canvas);
 }
 
-const QA_STATUS: Readonly<Record<QaRow['status'], { icon: string; text: string; color: string }>> = {
-  passed: { icon: '✓', text: 'Passed', color: COLORS.success },
-  failed: { icon: '✕', text: 'Failed', color: COLORS.danger },
-  running: { icon: '◐', text: 'Running', color: COLORS.amber },
-  queued: { icon: '…', text: 'Queued', color: COLORS.inkSoft },
-  not_run: { icon: '–', text: 'Not run', color: COLORS.inkSoft },
-};
 
 /** QA wall screen: the pull request and one row per required check, with icon and word. */
 export function paintQa(display: QaDisplay): CanvasTexture | null {
@@ -218,7 +185,7 @@ export function paintQa(display: QaDisplay): CanvasTexture | null {
   ctx.fillText(fit(ctx, display.heading ?? 'No pull requests yet', canvas.width - 72), 36, 112);
   display.rows.forEach((row, i) => {
     const y = 180 + i * 96;
-    const s = QA_STATUS[row.status];
+    const s = CHECK_STATUS[row.status];
     rounded(ctx, 30, y - 38, canvas.width - 60, 78, 18, '#25253a');
     ctx.fillStyle = s.color;
     ctx.beginPath();
