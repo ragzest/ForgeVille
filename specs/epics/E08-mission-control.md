@@ -1,6 +1,6 @@
 # E08 — Mission control
 
-Status: todo
+Status: done
 
 ## Outcome
 

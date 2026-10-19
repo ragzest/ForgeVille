@@ -1351,6 +1351,154 @@ kbd {
   cursor: pointer;
 }
 
+/* ---------------------------------------------------------------- mission control */
+
+/*
+ * Opens in the panel slot (top right), so it never sits over the interact
+ * hint or another panel's close button. Leaves the bottom of the screen free.
+ */
+.panel.mission-panel {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 11rem);
+}
+
+.mission-sub {
+  margin: 0 0 0.6rem;
+}
+
+.mission-tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (max-width: 760px) {
+  .mission-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.mission-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 12px;
+  background: var(--fv-paper);
+  border: var(--fv-border) solid var(--fv-ink);
+  box-shadow: 0 3px 0 var(--fv-ink);
+}
+
+.mission-tile-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.mission-tile-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.mission-tile-icon {
+  font-size: 1rem;
+}
+
+.mission-tile-note {
+  font-size: 0.72rem;
+  color: var(--fv-ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.mission-tile--success { background: var(--fv-success-soft); }
+.mission-tile--danger {
+  background: var(--fv-danger-soft);
+  border-style: dashed;
+}
+.mission-tile--danger .mission-tile-note {
+  color: var(--fv-ink);
+  font-weight: 600;
+}
+.mission-tile--review { background: var(--fv-review-soft); }
+
+.mission-events {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.75rem;
+  border-left: 3px solid var(--fv-line);
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+}
+
+.mission-events li {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.4rem;
+}
+
+.mission-events time {
+  font-family: var(--fv-mono);
+  font-weight: 600;
+}
+
+.mission-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  border: 2px solid var(--fv-ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mission-flag--danger { background: var(--fv-danger-soft); }
+.mission-flag--amber { background: var(--fv-amber-soft); }
+.mission-flag--success { background: var(--fv-success-soft); }
+
+/* Narrow screens: a one-line summary that expands. */
+.mission-summary {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.3rem 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  border: var(--fv-border) solid var(--fv-ink);
+  background: var(--fv-accent-soft);
+  color: var(--fv-ink);
+  box-shadow: 0 3px 0 var(--fv-ink);
+  font: 700 0.9rem/1.3 var(--fv-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mission-summary:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.mission-summary-toggle {
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .panel.mission-panel {
+    max-height: calc(100vh - 13rem);
+  }
+}
+
 /* Scenario switcher (S09-01) */
 .scenario-switcher {
   display: inline-flex;

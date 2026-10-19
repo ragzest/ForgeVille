@@ -9,6 +9,7 @@ import { INITIAL_INTERACTION, interactionStore } from '../../store/interaction.t
 import { INITIAL_NAVIGATION, navigationStore } from '../../store/navigation.ts';
 import type { OfficeCanvasProps } from '../../world/OfficeCanvas.tsx';
 import { BOARD_TARGET } from '../board/openBoard.ts';
+import { STATUS_TARGET } from '../mission-control/missionControl.ts';
 import { QA_TARGET } from '../qa/openQa.ts';
 
 // jsdom has no WebGL: a stand-in canvas reports ready straight away.
@@ -119,6 +120,28 @@ describe('scenario switcher', () => {
     await user.selectOptions(switcher(), 'Agent blocked');
 
     expect(within(blocked()).getByRole('button', { name: /LN-4/ })).toBeInTheDocument();
+  });
+
+  it('mission control recounts from the new snapshot', async () => {
+    const user = userEvent.setup();
+    const { container } = startApp('?scenario=feature-in-progress');
+    await whenReady(container);
+    act(() => {
+      interactionStore.getState().activate(STATUS_TARGET);
+    });
+    const metric = (key: string) =>
+      screen
+        .getByRole('dialog', { name: 'Mission control' })
+        .querySelector(`[data-metric="${key}"] .mission-tile-value`)
+        ?.textContent.replace(/^\D+/, '');
+    expect(metric('blockedTasks')).toBe('0');
+    expect(metric('successfulMerges')).toBe('1');
+
+    await user.selectOptions(switcher(), 'Agent blocked');
+    expect(metric('blockedTasks')).toBe('1');
+
+    await user.selectOptions(switcher(), 'Successful merge');
+    expect(metric('successfulMerges')).toBe('2');
   });
 });
 

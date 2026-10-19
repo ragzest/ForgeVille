@@ -1,6 +1,6 @@
 # S08-01 — Overlay metrics and event feed
 
-Status: todo
+Status: done
 Epic: [E08](../epics/E08-mission-control.md)
 Depends on: S02-04, S02-05, S01-02
 

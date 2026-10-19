@@ -7,6 +7,8 @@ import { deskLabel } from '../../world/interaction.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
 import { BOARD_TARGET, boardFloor, openBoard } from '../board/openBoard.ts';
 import { QA_TARGET, openQa } from '../qa/openQa.ts';
+import { STATUS_TARGET, openMissionControl } from '../mission-control/missionControl.ts';
+import { statusTiles } from '../../world/screens/displays.ts';
 import { CHECK_STATUS, qaDisplay } from '../../world/screens/qa.ts';
 import { PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
 import { deskId } from '../desks/deskDetails.ts';
@@ -39,6 +41,7 @@ export function TwoDView() {
 
   const board = floorBoard(snapshot, boardFloor(snapshot, floorId));
   const qa = qaDisplay(snapshot);
+  const tiles = statusTiles(snapshot);
 
   return (
     <div className="two-d">
@@ -72,6 +75,7 @@ export function TwoDView() {
                   selectZone(id);
                   if (id === 'board') openBoard();
                   if (id === 'qa') openQa();
+                  if (id === 'status') openMissionControl();
                 }}
               >
                 {zoneById(id).label}
@@ -126,6 +130,20 @@ export function TwoDView() {
         )}
         <button type="button" className="btn" aria-pressed={openId === QA_TARGET.id} onClick={openQa}>
           Open QA screen
+        </button>
+      </section>
+
+      <section className="shell-region" aria-labelledby="two-d-status-heading">
+        <h2 id="two-d-status-heading">Project status</h2>
+        <ul className={selectedZone === 'status' ? 'two-d-list is-highlighted' : 'two-d-list'}>
+          {tiles.map((tile) => (
+            <li key={tile.label}>
+              {tile.label} <strong>{tile.value}</strong>
+            </li>
+          ))}
+        </ul>
+        <button type="button" className="btn" aria-pressed={openId === STATUS_TARGET.id} onClick={openMissionControl}>
+          Open mission control
         </button>
       </section>
 
