@@ -83,8 +83,8 @@ describe('BoardPanel', () => {
 
   it('labels empty columns instead of leaving a gap', () => {
     renderBoard();
-    expect(column('Ready')).toHaveTextContent('No tasks in Ready.');
-    expect(column('Merged')).toHaveTextContent('No tasks in Merged.');
+    expect(column('Ready')).toHaveTextContent('Nothing in Ready. No task is waiting to be picked up.');
+    expect(column('Merged')).toHaveTextContent('Nothing in Merged yet. The first merge lands here.');
   });
 
   it('uses the whiteboard note colours for each column', () => {
@@ -109,7 +109,7 @@ describe('BoardPanel', () => {
     const twoD = screen.getByRole('region', { name: 'Board' });
     const twoDColumn = (label: string) =>
       [...twoD.querySelectorAll('.two-d-column')].find((el) => el.querySelector('h3')?.textContent.startsWith(label));
-    expect(twoDColumn('Merged')).toHaveTextContent('No tasks in Merged.');
+    expect(twoDColumn('Merged')).toHaveTextContent('Nothing in Merged yet. The first merge lands here.');
 
     act(() => {
       const s = store.getState().snapshot;
@@ -117,9 +117,9 @@ describe('BoardPanel', () => {
     });
 
     expect(within(column('Merged')).getByRole('button')).toHaveTextContent('FV-1');
-    expect(column('In Review')).toHaveTextContent('No tasks in In Review.');
+    expect(column('In Review')).toHaveTextContent('Nothing in In Review. No pull request needs eyes.');
     expect(twoDColumn('Merged')).toHaveTextContent('FV-1');
-    expect(twoDColumn('In Review')).toHaveTextContent('No tasks in In Review.');
+    expect(twoDColumn('In Review')).toHaveTextContent('Nothing in In Review. No pull request needs eyes.');
   });
 
   it('selecting a card shows its detail and marks it on the 2D board', async () => {

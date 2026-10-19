@@ -10,7 +10,7 @@ import { QA_TARGET, openQa } from '../qa/openQa.ts';
 import { STATUS_TARGET, openMissionControl } from '../mission-control/missionControl.ts';
 import { statusTiles } from '../../world/screens/displays.ts';
 import { CHECK_STATUS, qaDisplay } from '../../world/screens/qa.ts';
-import { PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
+import { EMPTY_COLUMN_COPY, PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
 import { deskId } from '../desks/deskDetails.ts';
 import { buildingDirectory, floorById, floorTitle } from '../../world/building.ts';
 
@@ -93,8 +93,10 @@ export function TwoDView() {
             const id = deskId(agent.id);
             const label = deskLabel(agent.name);
             return (
-              <li key={agent.id} className={selectedZone === 'desks' ? 'is-highlighted' : undefined}>
-                <strong>{agent.name}</strong> <span className="two-d-muted">{agent.role}</span>
+              <li key={agent.id} className={selectedZone === 'desks' ? 'two-d-agent is-highlighted' : 'two-d-agent'}>
+                <span>
+                  <strong>{agent.name}</strong> <span className="two-d-muted">{agent.role}</span>
+                </span>
                 <PresenceBadge presence={presenceOf(snapshot, agent.id)} />
                 <button
                   type="button"
@@ -159,7 +161,7 @@ export function TwoDView() {
               {col.label} <span className="two-d-muted">({col.cards.length})</span>
             </h3>
             {col.cards.length === 0 ? (
-              <p className="two-d-muted">No tasks in {col.label}.</p>
+              <p className="two-d-muted">{EMPTY_COLUMN_COPY[col.column]}</p>
             ) : (
               <ul className="two-d-list">
                 {col.cards.map((card) => (

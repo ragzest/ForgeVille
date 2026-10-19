@@ -111,7 +111,7 @@ export function TaskDetail({ taskId }: { taskId: string }) {
 
       {feedback && (
         <p className={feedback.ok ? 'desk-feedback' : 'desk-feedback is-refused'} role={feedback.ok ? 'status' : 'alert'}>
-          {feedback.ok ? feedback.text : `Not moved: ${feedback.text}`}
+          <span aria-hidden="true">{feedback.ok ? '✓' : '✕'}</span> {feedback.ok ? feedback.text : `Not moved: ${feedback.text}`}
         </p>
       )}
     </section>

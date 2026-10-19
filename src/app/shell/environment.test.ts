@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { detectWebGL, prefersReducedMotion, replaceSearch } from './environment.ts';
+import { detectWebGL, prefersReducedMotion, replaceSearch, watchReducedMotion } from './environment.ts';
 
 function fakeDocument(getContext: (id: string) => unknown): Document {
   return { createElement: () => ({ getContext }) } as unknown as Document;
@@ -38,6 +38,29 @@ describe('prefersReducedMotion', () => {
 
   it('is false when matchMedia is missing', () => {
     expect(prefersReducedMotion({} as unknown as Window)).toBe(false);
+  });
+});
+
+describe('watchReducedMotion', () => {
+  it('reports changes to the media query until unsubscribed', () => {
+    const query = {
+      addEventListener: vi.fn<(type: string, listener: (event: { matches: boolean }) => void) => void>(),
+      removeEventListener: vi.fn(),
+    };
+    const onChange = vi.fn();
+    const stop = watchReducedMotion(onChange, { matchMedia: () => query } as unknown as Window);
+    const [type, listener] = query.addEventListener.mock.calls[0] ?? [];
+    expect(type).toBe('change');
+    listener?.({ matches: true });
+    expect(onChange).toHaveBeenCalledWith(true);
+    stop();
+    expect(query.removeEventListener).toHaveBeenCalledWith('change', listener);
+  });
+
+  it('is a no-op when matchMedia is missing', () => {
+    expect(() => {
+      watchReducedMotion(() => undefined, {} as unknown as Window)();
+    }).not.toThrow();
   });
 });
 

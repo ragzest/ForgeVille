@@ -25,6 +25,20 @@ export const COLUMN_NOTE: Readonly<Record<TaskColumn, { chip: string; note: stri
   merged: { chip: '#c77dff', note: '#eadcff' },
 };
 
+/**
+ * What an empty column says, in the board panel and the 2D view. Each line
+ * names the column, so it still reads on its own to a screen reader.
+ */
+export const EMPTY_COLUMN_COPY: Readonly<Record<TaskColumn, string>> = {
+  backlog: 'Backlog is clear. No ideas waiting.',
+  ready: 'Nothing in Ready. No task is waiting to be picked up.',
+  in_progress: 'Nothing in In Progress. No one is mid-task.',
+  in_review: 'Nothing in In Review. No pull request needs eyes.',
+  qa: 'Nothing in QA. The test bench is quiet.',
+  blocked: 'Nothing in Blocked. Every agent can keep going.',
+  merged: 'Nothing in Merged yet. The first merge lands here.',
+};
+
 /** Notes the whiteboard has room for per column; the rest read "+N more". */
 export const WALL_NOTES = 4;
 

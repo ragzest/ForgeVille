@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyColorTokens, CHARACTER_COLORS, COLORS, HAIR_COLORS } from './tokens.ts';
+import { applyColorTokens, CHARACTER_COLORS, COLORS, contrastRatio, HAIR_COLORS, PANEL_TEXT_PAIRS } from './tokens.ts';
 
 describe('colour tokens', () => {
   it('are valid hex colours', () => {
@@ -18,5 +18,18 @@ describe('colour tokens', () => {
   it('keeps status colours distinct from each other', () => {
     const statuses = [COLORS.success, COLORS.danger, COLORS.amber, COLORS.review];
     expect(new Set(statuses).size).toBe(statuses.length);
+  });
+
+  it('keeps every panel text pairing at 4.5:1 or better', () => {
+    for (const [text, background, where] of PANEL_TEXT_PAIRS) {
+      expect(contrastRatio(text, background), where).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('measures contrast like WCAG', () => {
+    expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 5);
+    expect(contrastRatio('#ffffff', '#ffffff')).toBeCloseTo(1, 5);
+    // Plain status fills are too light for white text; the deep variants exist for that.
+    expect(contrastRatio('#ffffff', COLORS.danger)).toBeLessThan(4.5);
   });
 });

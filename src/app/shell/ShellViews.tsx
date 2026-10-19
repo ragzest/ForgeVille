@@ -12,6 +12,7 @@ import { CanvasErrorBoundary } from './CanvasErrorBoundary.tsx';
 interface ErrorViewProps {
   message: string;
   onRetry: () => void;
+  onUseTwoD: () => void;
 }
 
 export function LoadingView() {
@@ -23,18 +24,27 @@ export function LoadingView() {
         </span>
         Starting ForgeVille…
       </p>
+      <p className="shell-panel-note">Setting out desks and painting the signs.</p>
     </div>
   );
 }
 
-export function ErrorView({ message, onRetry }: ErrorViewProps) {
+export function ErrorView({ message, onRetry, onUseTwoD }: ErrorViewProps) {
   return (
     <div className="shell-panel shell-panel--error" role="alert">
-      <h2>Something went wrong</h2>
+      <h2>
+        <span aria-hidden="true">✕</span> The office hit a snag
+      </h2>
       <p>{message}</p>
-      <button type="button" onClick={onRetry}>
-        Retry
-      </button>
+      <p className="shell-panel-note">Nothing is lost: the office is simulated, and the 2D view has the same team and board.</p>
+      <div className="shell-panel-actions">
+        <button type="button" onClick={onRetry}>
+          Retry
+        </button>
+        <button type="button" className="is-quiet" onClick={onUseTwoD}>
+          Use the 2D view
+        </button>
+      </div>
     </div>
   );
 }
@@ -85,14 +95,32 @@ export function OfficeView({ mounted, reducedMotion, onReady, onError }: OfficeV
   );
 }
 
+interface FallbackViewProps {
+  /** `no-webgl`: the browser has no WebGL. `crashed`: the 3D office failed and the visitor chose 2D. */
+  reason: 'no-webgl' | 'crashed';
+  onRetry: () => void;
+}
+
 /** Non-3D path: the same 2D view the user can choose, with zone selection and desk panels. */
-export function FallbackView() {
+export function FallbackView({ reason, onRetry }: FallbackViewProps) {
   useInteractionKeys();
   return (
     <>
       <div className="shell-panel shell-panel--notice" role="status">
-        <h2>The 3D office cannot start</h2>
-        <p>WebGL is not available in this browser. You can still use the 2D view below.</p>
+        {reason === 'no-webgl' ? (
+          <>
+            <h2>The 3D office cannot start</h2>
+            <p>WebGL is not available in this browser. You can still use the 2D view below.</p>
+          </>
+        ) : (
+          <>
+            <h2>Using the 2D view</h2>
+            <p>The 3D office stopped, so here is the same team and board without it.</p>
+            <button type="button" className="is-quiet" onClick={onRetry}>
+              Try the 3D office again
+            </button>
+          </>
+        )}
       </div>
       <NavigationToolbar webgl={false} />
       <TwoDView />

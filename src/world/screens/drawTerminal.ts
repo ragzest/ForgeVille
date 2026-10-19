@@ -14,7 +14,8 @@ export const SCREEN_PX = { width: 640, height: 384 } as const;
 
 const TERM = TERMINAL_COLORS;
 
-const TONES = { danger: COLORS.danger, amber: COLORS.amber, review: COLORS.review, success: COLORS.success } as const;
+// Deep fills, so the white banner text stays readable (amber keeps ink text).
+const TONES = { danger: COLORS.dangerDeep, amber: COLORS.amber, review: COLORS.reviewDeep, success: COLORS.successDeep } as const;
 
 export interface PaintedScreen {
   readonly texture: CanvasTexture;

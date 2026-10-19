@@ -8,7 +8,8 @@ export const TERMINAL_COLORS = {
   bg: COLORS.screen,
   bar: COLORS.screenBar,
   fg: '#eeeef6',
-  dim: '#7a7a9a',
+  /** Timestamps and empty-state copy; 4.5:1 or better on `bg`. */
+  dim: '#9a9ab8',
   /** Commands (`$ …`). */
   green: '#50fa7b',
   /** System lines. */
