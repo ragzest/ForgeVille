@@ -33,9 +33,9 @@ Status key: `todo` | `in-progress` | `done`
 | 6 | [E06](epics/E06-board.md) | Kanban whiteboard | done |
 | 6.1 | [S06-01](stories/S06-01-board.md) | Board from snapshot | done |
 | 6.2 | [S06-02](stories/S06-02-task-moves.md) | Inspect and simulate valid moves | done |
-| 7 | [E07](epics/E07-qa-pr.md) | QA lab and pull-request theatre | in-progress |
+| 7 | [E07](epics/E07-qa-pr.md) | QA lab and pull-request theatre | done |
 | 7.1 | [S07-01](stories/S07-01-pr-panel.md) | Pull-request detail panel | done |
-| 7.2 | [S07-02](stories/S07-02-merge-actions.md) | Merge and request-changes actions | todo |
+| 7.2 | [S07-02](stories/S07-02-merge-actions.md) | Merge and request-changes actions | done |
 | 8 | [E08](epics/E08-mission-control.md) | Mission control | todo |
 | 8.1 | [S08-01](stories/S08-01-mission-control.md) | Overlay metrics and event feed | todo |
 | 9 | [E09](epics/E09-vertical-slice.md) | Cohesive prototype | todo |

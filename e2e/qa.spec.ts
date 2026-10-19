@@ -28,7 +28,7 @@ test('walking to the QA screen and pressing E opens the failing pull request', a
   await expect(checks).toHaveText(['Unit tests✓ Passed', 'Build✓ Passed', 'Browser tests✕ Failed']);
   await expect(panel.getByRole('list', { name: 'Merge blocked because' })).toContainText('Browser tests failed');
   await expect(panel.getByText(/^Simulated screenshot/)).toHaveCount(2);
-  await expect(panel.getByRole('button', { name: 'Merge', exact: true })).toBeDisabled();
+  await expect(panel.getByRole('button', { name: 'Merge', exact: true })).toHaveAttribute('aria-disabled', 'true');
 
   await page.keyboard.press('Escape');
   await expect(panel).toBeHidden();
@@ -48,4 +48,34 @@ test('the 2D QA lab opens the passing pull request, which the policy would merge
     'Browser tests✓ Passed',
   ]);
   await expect(panel).toContainText('The merge policy would allow this merge.');
+});
+
+test('merging the passing pull request updates the QA lab, the board, and the panel', async ({ page }) => {
+  await ready(page, '/?scenario=review-and-qa-pass');
+  await toolbar(page).getByRole('button', { name: '2D view' }).click();
+  const lab = page.getByRole('region', { name: 'QA lab' });
+  await lab.getByRole('button', { name: 'Open QA screen' }).click();
+  const panel = page.getByRole('dialog', { name: 'QA screen' });
+
+  await panel.getByRole('button', { name: 'Merge', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Pull request #2 merged; LN-2 is done.');
+  await expect(panel).toContainText('LN-2 · Merged');
+  await expect(lab).toContainText('PR #2 · Add-to-list button on article cards (merged)');
+  const board = page.getByRole('region', { name: 'Board', exact: true });
+  await expect(board.locator('.two-d-column').filter({ hasText: /^Merged/ })).toContainText('LN-2');
+});
+
+test('the failing pull request refuses to merge and says why', async ({ page }) => {
+  await ready(page, '/?scenario=qa-failure');
+  await toolbar(page).getByRole('button', { name: '2D view' }).click();
+  await page.getByRole('region', { name: 'QA lab' }).getByRole('button', { name: 'Open QA screen' }).click();
+  const panel = page.getByRole('dialog', { name: 'QA screen' });
+
+  const merge = panel.getByRole('button', { name: 'Merge', exact: true });
+  await merge.focus();
+  await page.keyboard.press('Enter');
+  const alert = panel.getByRole('alert');
+  await expect(alert).toContainText('Not merged:');
+  await expect(alert).toContainText('LN-2 must be in QA to merge.');
+  await expect(panel).toContainText('StateOpen');
 });

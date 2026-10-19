@@ -1,6 +1,6 @@
 # S07-02 — Merge and request-changes actions
 
-Status: todo
+Status: done
 Epic: [E07](../epics/E07-qa-pr.md)
 Depends on: S07-01
 

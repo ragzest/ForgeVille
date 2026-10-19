@@ -60,12 +60,10 @@ describe('pull-request panel, passing scenario', () => {
     expect(within(panel).queryByRole('list', { name: 'Merge blocked because' })).not.toBeInTheDocument();
   });
 
-  it('shows merge and request-changes buttons, disabled with the reason until S07-02', () => {
+  it('offers Merge and Request changes as enabled buttons when the policy allows', () => {
     const { panel } = openPanel('review-and-qa-pass');
-    for (const name of ['Merge', 'Request changes']) {
-      expect(within(panel).getByRole('button', { name })).toBeDisabled();
-      expect(within(panel).getByRole('button', { name })).toHaveAccessibleDescription('Merge and request changes arrive with S07-02.');
-    }
+    expect(within(panel).getByRole('button', { name: 'Merge' })).toHaveAttribute('aria-disabled', 'false');
+    expect(within(panel).getByRole('button', { name: 'Request changes' })).toHaveAttribute('aria-disabled', 'false');
   });
 });
 
