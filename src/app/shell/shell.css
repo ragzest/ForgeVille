@@ -1205,3 +1205,129 @@ kbd {
   background: var(--fv-paper);
   color: var(--fv-ink);
 }
+
+/* ---------------------------------------------------------------- pull requests */
+
+/* Status chips: icon and word always; colour only repeats them. */
+.qa-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  border: 2px solid var(--fv-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qa-status--passed,
+.qa-status--success { background: var(--fv-success-soft); }
+.qa-status--failed,
+.qa-status--danger { background: var(--fv-danger-soft); }
+.qa-status--running { background: var(--fv-amber-soft); }
+.qa-status--queued,
+.qa-status--not_run,
+.qa-status--muted { background: var(--fv-cream); color: var(--fv-ink-soft); }
+
+.panel.pr-panel {
+  width: min(36rem, calc(100vw - 2rem));
+}
+
+.pr-title {
+  margin: 0.5rem 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.pr-number {
+  font-family: var(--fv-mono);
+}
+
+.pr-subheading {
+  margin: 0.9rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.pr-checks,
+.pr-findings,
+.pr-reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pr-checks li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 10px;
+  border: 2px solid var(--fv-line);
+}
+
+.pr-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.75rem;
+  border-left: 3px solid var(--fv-line);
+  display: grid;
+  gap: 0.55rem;
+}
+
+.pr-run {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.4rem;
+  font-size: 0.88rem;
+}
+
+.pr-run time {
+  font-family: var(--fv-mono);
+  font-weight: 600;
+}
+
+.pr-run-summary,
+.pr-run-failure {
+  display: block;
+}
+
+.pr-run-failure {
+  color: var(--fv-danger);
+  font-weight: 600;
+}
+
+.pr-shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.6rem;
+}
+
+.pr-shot {
+  margin: 0;
+}
+
+.pr-shot-frame {
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  border: 2px dashed var(--fv-ink-soft);
+  background:
+    repeating-linear-gradient(45deg, var(--fv-cream) 0 10px, var(--fv-paper) 10px 20px);
+}
+
+.pr-shot figcaption {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--fv-ink-soft);
+}
+
+.pr-blocked-heading {
+  margin: 0 0 0.3rem;
+  font-weight: 700;
+}
+
+.pr-reasons li::before {
+  content: '⛔ ';
+}

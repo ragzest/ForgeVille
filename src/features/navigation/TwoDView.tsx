@@ -6,6 +6,8 @@ import { interactionStore, useInteraction } from '../../store/interaction.ts';
 import { deskLabel } from '../../world/interaction.ts';
 import { PresenceBadge } from '../PresenceBadge.tsx';
 import { BOARD_TARGET, boardFloor, openBoard } from '../board/openBoard.ts';
+import { QA_TARGET, openQa } from '../qa/openQa.ts';
+import { CHECK_STATUS, qaDisplay } from '../../world/screens/qa.ts';
 import { PRIORITY_LABELS, floorBoard } from '../../world/screens/board.ts';
 import { deskId } from '../desks/deskDetails.ts';
 import { buildingDirectory, floorById, floorTitle } from '../../world/building.ts';
@@ -36,6 +38,7 @@ export function TwoDView() {
   const vacant = home !== undefined && home.floor.id !== floorId;
 
   const board = floorBoard(snapshot, boardFloor(snapshot, floorId));
+  const qa = qaDisplay(snapshot);
 
   return (
     <div className="two-d">
@@ -68,6 +71,7 @@ export function TwoDView() {
                 onClick={() => {
                   selectZone(id);
                   if (id === 'board') openBoard();
+                  if (id === 'qa') openQa();
                 }}
               >
                 {zoneById(id).label}
@@ -103,6 +107,26 @@ export function TwoDView() {
             );
           })}
         </ul>
+      </section>
+
+      <section className="shell-region" aria-labelledby="two-d-qa-heading">
+        <h2 id="two-d-qa-heading">QA lab</h2>
+        <p className="two-d-muted">{qa.heading ?? 'No pull requests yet.'}</p>
+        {qa.rows.length > 0 && (
+          <ul className={selectedZone === 'qa' ? 'two-d-list is-highlighted' : 'two-d-list'}>
+            {qa.rows.map((row) => (
+              <li key={row.check}>
+                {row.label}{' '}
+                <span className={`qa-status qa-status--${row.status}`}>
+                  <span aria-hidden="true">{CHECK_STATUS[row.status].icon}</span> {CHECK_STATUS[row.status].text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button type="button" className="btn" aria-pressed={openId === QA_TARGET.id} onClick={openQa}>
+          Open QA screen
+        </button>
       </section>
 
       <section className="shell-region" aria-labelledby="fallback-board-heading">

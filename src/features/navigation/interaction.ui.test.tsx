@@ -17,7 +17,7 @@ function Harness() {
   );
 }
 
-const board = { id: 'qa-screen', label: 'QA screen' };
+const board = { id: 'reception', label: 'Reception' };
 
 function setLocked(el: Element | null) {
   Object.defineProperty(document, 'pointerLockElement', { configurable: true, get: () => el });
@@ -44,7 +44,7 @@ describe('interaction UI', () => {
     });
     const hint = screen.getByRole('status');
     expect(hint).toHaveTextContent('E');
-    expect(hint).toHaveTextContent('QA screen');
+    expect(hint).toHaveTextContent('Reception');
 
     act(() => {
       interactionStore.getState().setFocused(null);
@@ -60,8 +60,8 @@ describe('interaction UI', () => {
     });
 
     await user.keyboard('e');
-    const panel = screen.getByRole('dialog', { name: 'QA screen' });
-    expect(panel).toHaveTextContent('qa-screen');
+    const panel = screen.getByRole('dialog', { name: 'Reception' });
+    expect(panel).toHaveTextContent('reception');
     expect(screen.queryByRole('status')).not.toBeInTheDocument(); // hint hides while open
 
     await user.click(screen.getByRole('button', { name: 'Close panel' }));
